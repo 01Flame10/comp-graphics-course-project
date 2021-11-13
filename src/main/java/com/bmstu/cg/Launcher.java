@@ -2,6 +2,8 @@ package com.bmstu.cg;
 
 import java.awt.Canvas;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.DataBufferByte;
 import java.awt.GridLayout;
@@ -68,6 +70,8 @@ public class Launcher extends Canvas {
     private int width;
     private int height;
 
+    private KeyEvent lastEvent;
+
     private final String resourcePath = "/home/flame/Documents/comp-graphics-course-project/src/main/resources/";
 
     public Launcher(int width, int height, String title, int mode) throws IOException {
@@ -97,6 +101,22 @@ public class Launcher extends Canvas {
         mFrame = new JFrame();
         mFrame.setLayout(null);
         mFrame.add(this);
+        this.addKeyListener(new KeyListener(){
+            @Override
+            public void keyPressed(KeyEvent e) {
+                System.out.println("keyPressed " + e.getKeyChar() + " | " + e.getKeyCode());
+                lastEvent = e;
+                update();
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+        });
         mFrame.setVisible(true);
 
         JPanel panel = new JPanel(new GridLayout(1, 1));
@@ -921,25 +941,33 @@ public class Launcher extends Canvas {
     }
 
     private void update() {
+        System.out.println("workPerforming " + workPerforming);
         if (workPerforming == 1) {
             long previousTime = System.nanoTime();
             long currentTime = System.nanoTime();
-            float deltaCam = (float) ((currentTime - previousTime) / 1000000000.0);
+//            float deltaCam = (float) ((currentTime - previousTime) / 1000000000.0);
 //            previousTime = currentTime;
 
-            camera.update(mInput, deltaCam);
-            Matrix vp = camera.getViewProjection();
+            camera.update(lastEvent, 0.05);
+            lastEvent = null;
+
             target.Clear((byte) 0x00);
             target.NewZBuffer();
 
             lightSourcesWork.get(0).setLightPosition(camera.getCameraDirection().negative());
             try {
-                drawObjects(target, vp, complexObjectList, lightSourcesWork);
+                drawObjects(target, camera.getViewProjection(), complexObjectList, lightSourcesWork);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             swapBuffers();
+        } else {
+            camera.update(lastEvent, 0.05);
+            lastEvent = null;
+            Matrix vp = camera.getViewProjection();
+            target.Clear((byte) 0x00);
+            target.NewZBuffer();
         }
 
         sceneObjects.clear();

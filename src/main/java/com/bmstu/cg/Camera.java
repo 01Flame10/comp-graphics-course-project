@@ -45,29 +45,42 @@ public class Camera {
     }
 
 
-    public void update(Input input, float delta) {
-        final float sensitivityX = 2.66f * delta;
-        final float sensitivityY = 2.0f * delta;
-        final float movAmt = 5.0f * delta;
+    public void update(KeyEvent action, double delta) {
+        final float sensitivityX = (float) (1.66f * delta);
+        final float sensitivityY = (float) (1.0f * delta);
+        final float movAmt = (float) (5.0f * delta);
+        System.out.println("MOV " + movAmt);
+        if (action != null) {
+            System.out.println("ACTION " + action.getKeyCode());
+            switch (action.getKeyCode()) {
+                case KeyEvent.VK_W:
+                    move(transform.getRot().getForward(), movAmt);
+                    break;
+                case KeyEvent.VK_S:
+                    move(transform.getRot().getForward(), -movAmt);
+                    break;
+                case KeyEvent.VK_A:
+                    move(transform.getRot().getLeft(), movAmt);
+                    break;
+                case KeyEvent.VK_D:
+                    move(transform.getRot().getRight(), movAmt);
+                    break;
 
-        System.out.println("KEY: " + input.getKey(KeyEvent.VK_W));
-        if (input.getKey(KeyEvent.VK_W))
-            move(transform.getRot().getForward(), movAmt);
-        if (input.getKey(KeyEvent.VK_S))
-            move(transform.getRot().getForward(), -movAmt);
-        if (input.getKey(KeyEvent.VK_A))
-            move(transform.getRot().getLeft(), movAmt);
-        if (input.getKey(KeyEvent.VK_D))
-            move(transform.getRot().getRight(), movAmt);
+                case KeyEvent.VK_RIGHT:
+                    rotate(Y_AXIS, sensitivityX);
+                    break;
+                case KeyEvent.VK_LEFT:
+                    rotate(Y_AXIS, -sensitivityX);
+                    break;
+                case KeyEvent.VK_DOWN:
+                    rotate(transform.getRot().getRight(), sensitivityY);
+                    break;
+                case KeyEvent.VK_UP:
+                    rotate(transform.getRot().getRight(), -sensitivityY);
+                    break;
+            }
+        }
 
-        if (input.getKey(KeyEvent.VK_RIGHT))
-            rotate(Y_AXIS, sensitivityX);
-        if (input.getKey(KeyEvent.VK_LEFT))
-            rotate(Y_AXIS, -sensitivityX);
-        if (input.getKey(KeyEvent.VK_DOWN))
-            rotate(transform.getRot().getRight(), sensitivityY);
-        if (input.getKey(KeyEvent.VK_UP))
-            rotate(transform.getRot().getRight(), -sensitivityY);
     }
 
 
