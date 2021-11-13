@@ -33,7 +33,7 @@ public class Sphere extends PrimitiveObject {
         trans = tr;
     }
 
-    public static float GetCoord(float i1, float i2, float w1,
+    public static float getCoord(float i1, float i2, float w1,
                                  float w2, float p) {
         return ((p - i1) / (i2 - i1)) * (w2 - w1) + w1;
     }
@@ -49,13 +49,13 @@ public class Sphere extends PrimitiveObject {
     @Override
     public ColorCG getColor(Vector4 pos) {
         if (is_texture) {
-            Matrix transform = this.trans.GetTransformation();
-            Vector4 normal = pos.Sub(transform.Mul(this.center)).Normalized();
-            float x1 = (float) (0.5 + Math.atan2(normal.GetZ(), normal.GetX()) / (Math.PI * 2.0f)) * texture.GetWidth();
-            float y1 = (float) (0.5 - Math.asin(normal.GetY()) / Math.PI) * texture.GetWidth();
+            Matrix transform = this.trans.getTransformation();
+            Vector4 normal = pos.substitute(transform.multiply(this.center)).normalized();
+            float x1 = (float) (0.5 + Math.atan2(normal.getZ(), normal.getX()) / (Math.PI * 2.0f)) * texture.getWidth();
+            float y1 = (float) (0.5 - Math.asin(normal.getY()) / Math.PI) * texture.getWidth();
 
             int i1 = (int) x1, j1 = (int) y1;
-            if (i1 >= 0 && j1 >= 0 && i1 < texture.GetWidth() && j1 < texture.GetHeight()) {
+            if (i1 >= 0 && j1 >= 0 && i1 < texture.getWidth() && j1 < texture.getHeight()) {
                 float[] colors = texture.get_pixel_color(i1, j1);
                 ColorCG color_current = new ColorCG(colors[0], colors[1], colors[2], texture.specular, texture.refl, texture.refr, texture.opacity);
                 return color_current;
@@ -69,29 +69,29 @@ public class Sphere extends PrimitiveObject {
 
     @Override
     public Vector4 getNormalAt(Vector4 point) {
-        Matrix transform = this.trans.GetTransformation();
-        Vector4 normal_Vect = point.Add(transform.Mul(this.center).Negative()).Normalized();
+        Matrix transform = this.trans.getTransformation();
+        Vector4 normal_Vect = point.add(transform.multiply(this.center).negative()).normalized();
         return normal_Vect;
     }
 
     @Override
     public float findIntersection(Ray ray) {
-        Matrix transform = this.trans.GetTransformation();
+        Matrix transform = this.trans.getTransformation();
 
         Vector4 ray_origin = ray.getRayOrigin();
-        float ray_origin_x = ray_origin.GetX();
-        float ray_origin_y = ray_origin.GetY();
-        float ray_origin_z = ray_origin.GetZ();
+        float ray_origin_x = ray_origin.getX();
+        float ray_origin_y = ray_origin.getY();
+        float ray_origin_z = ray_origin.getZ();
 
         Vector4 ray_direction = ray.getRayDirection();
-        float ray_direction_x = ray_direction.GetX();
-        float ray_direction_y = ray_direction.GetY();
-        float ray_direction_z = ray_direction.GetZ();
+        float ray_direction_x = ray_direction.getX();
+        float ray_direction_y = ray_direction.getY();
+        float ray_direction_z = ray_direction.getZ();
 
-        Vector4 sphere_center = transform.Mul(this.center);
-        float sphere_center_x = sphere_center.GetX();
-        float sphere_center_y = sphere_center.GetY();
-        float sphere_center_z = sphere_center.GetZ();
+        Vector4 sphere_center = transform.multiply(this.center);
+        float sphere_center_x = sphere_center.getX();
+        float sphere_center_y = sphere_center.getY();
+        float sphere_center_z = sphere_center.getZ();
 
 
         float b = (2 * (ray_origin_x - sphere_center_x) * ray_direction_x) + (2 * (ray_origin_y - sphere_center_y) * ray_direction_y) + (2 * (ray_origin_z - sphere_center_z) * ray_direction_z);

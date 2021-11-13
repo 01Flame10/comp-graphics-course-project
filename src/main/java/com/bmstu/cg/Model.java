@@ -24,18 +24,18 @@ public class Model {
             int i1 = indices.get(i + 1);
             int i2 = indices.get(i + 2);
 
-            Vector4 v1 = positions.get(i1).Sub(positions.get(i0));
-            Vector4 v2 = positions.get(i2).Sub(positions.get(i0));
+            Vector4 v1 = positions.get(i1).substitute(positions.get(i0));
+            Vector4 v2 = positions.get(i2).substitute(positions.get(i0));
 
-            Vector4 normal = v1.Cross(v2).Normalized();
+            Vector4 normal = v1.cross(v2).normalized();
 
-            normals.set(i0, normals.get(i0).Add(normal));
-            normals.set(i1, normals.get(i1).Add(normal));
-            normals.set(i2, normals.get(i2).Add(normal));
+            normals.set(i0, normals.get(i0).add(normal));
+            normals.set(i1, normals.get(i1).add(normal));
+            normals.set(i2, normals.get(i2).add(normal));
         }
 
         for (int i = 0; i < normals.size(); i++)
-            normals.set(i, normals.get(i).Normalized());
+            normals.set(i, normals.get(i).normalized());
     }
 
     public void CalcTangents() {
@@ -44,49 +44,49 @@ public class Model {
             int i1 = indices.get(i + 1);
             int i2 = indices.get(i + 2);
 
-            Vector4 edge1 = positions.get(i1).Sub(positions.get(i0));
-            Vector4 edge2 = positions.get(i2).Sub(positions.get(i0));
+            Vector4 edge1 = positions.get(i1).substitute(positions.get(i0));
+            Vector4 edge2 = positions.get(i2).substitute(positions.get(i0));
 
-            float deltaU1 = texCoords.get(i1).GetX() - texCoords.get(i0).GetX();
-            float deltaV1 = texCoords.get(i1).GetY() - texCoords.get(i0).GetY();
-            float deltaU2 = texCoords.get(i2).GetX() - texCoords.get(i0).GetX();
-            float deltaV2 = texCoords.get(i2).GetY() - texCoords.get(i0).GetY();
+            float deltaU1 = texCoords.get(i1).getX() - texCoords.get(i0).getX();
+            float deltaV1 = texCoords.get(i1).getY() - texCoords.get(i0).getY();
+            float deltaU2 = texCoords.get(i2).getX() - texCoords.get(i0).getX();
+            float deltaV2 = texCoords.get(i2).getY() - texCoords.get(i0).getY();
 
             float dividend = (deltaU1 * deltaV2 - deltaU2 * deltaV1);
             float f = dividend == 0 ? 0.0f : 1.0f / dividend;
 
             Vector4 tangent = new Vector4(
-                    f * (deltaV2 * edge1.GetX() - deltaV1 * edge2.GetX()),
-                    f * (deltaV2 * edge1.GetY() - deltaV1 * edge2.GetY()),
-                    f * (deltaV2 * edge1.GetZ() - deltaV1 * edge2.GetZ()),
+                    f * (deltaV2 * edge1.getX() - deltaV1 * edge2.getX()),
+                    f * (deltaV2 * edge1.getY() - deltaV1 * edge2.getY()),
+                    f * (deltaV2 * edge1.getZ() - deltaV1 * edge2.getZ()),
                     0);
 
-            tangents.set(i0, tangents.get(i0).Add(tangent));
-            tangents.set(i1, tangents.get(i1).Add(tangent));
-            tangents.set(i2, tangents.get(i2).Add(tangent));
+            tangents.set(i0, tangents.get(i0).add(tangent));
+            tangents.set(i1, tangents.get(i1).add(tangent));
+            tangents.set(i2, tangents.get(i2).add(tangent));
         }
 
         for (int i = 0; i < tangents.size(); i++)
-            tangents.set(i, tangents.get(i).Normalized());
+            tangents.set(i, tangents.get(i).normalized());
     }
 
-    public List<Vector4> GetPositions() {
+    public List<Vector4> getPositions() {
         return positions;
     }
 
-    public List<Vector4> GetTexCoords() {
+    public List<Vector4> getTexCoords() {
         return texCoords;
     }
 
-    public List<Vector4> GetNormals() {
+    public List<Vector4> getNormals() {
         return normals;
     }
 
-    public List<Vector4> GetTangents() {
+    public List<Vector4> getTangents() {
         return tangents;
     }
 
-    public List<Integer> GetIndices() {
+    public List<Integer> getIndices() {
         return indices;
     }
 }

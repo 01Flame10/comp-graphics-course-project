@@ -19,17 +19,17 @@ public class Light extends Source {
     }
 
     @Override
-    public void SetLightPosition(Vector4 pos) {
+    public void setLightPosition(Vector4 pos) {
         position = pos;
     }
 
     @Override
-    public void SetLightIntensive(float intens) {
+    public void setLightIntensive(float intens) {
         intensive = intens;
     }
 
     @Override
-    public void SetLightColor(ColorCG col) {
+    public void setLightColor(ColorCG col) {
         color = col;
     }
 

@@ -71,19 +71,19 @@ public class Input implements KeyListener, FocusListener,
     public void keyTyped(KeyEvent e) {
     }
 
-    public boolean GetKey(int key) {
+    public boolean getKey(int key) {
         return keys[key];
     }
 
-    public boolean GetMouse(int button) {
+    public boolean getMouse(int button) {
         return mouseButtons[button];
     }
 
-    public int GetMouseX() {
+    public int getMouseX() {
         return mouseX;
     }
 
-    public int GetMouseY() {
+    public int getMouseY() {
         return mouseY;
     }
 }

@@ -21,10 +21,10 @@ public class Interpolation {
 
     public Interpolation(Vertex minYVert, Vertex midYVert, Vertex maxYVert, Vector4 lightDir) {
         float oneOverdX = 1.0f /
-                (((midYVert.GetX() - maxYVert.GetX()) *
-                        (minYVert.GetY() - maxYVert.GetY())) -
-                        ((minYVert.GetX() - maxYVert.GetX()) *
-                                (midYVert.GetY() - maxYVert.GetY())));
+                (((midYVert.getX() - maxYVert.getX()) *
+                        (minYVert.getY() - maxYVert.getY())) -
+                        ((minYVert.getX() - maxYVert.getX()) *
+                                (midYVert.getY() - maxYVert.getY())));
 
         float oneOverdY = -oneOverdX;
 
@@ -34,25 +34,25 @@ public class Interpolation {
         depth = new float[3];
         lightAmt = new float[3];
 
-        depth[0] = minYVert.GetPosition().GetZ();
-        depth[1] = midYVert.GetPosition().GetZ();
-        depth[2] = maxYVert.GetPosition().GetZ();
+        depth[0] = minYVert.getPosition().getZ();
+        depth[1] = midYVert.getPosition().getZ();
+        depth[2] = maxYVert.getPosition().getZ();
 
-        lightAmt[0] = Limit(minYVert.GetNormal().Dot(lightDir)) * 0.5f + 0.1f;
-        lightAmt[1] = Limit(midYVert.GetNormal().Dot(lightDir)) * 0.5f + 0.1f;
-        lightAmt[2] = Limit(maxYVert.GetNormal().Dot(lightDir)) * 0.5f + 0.1f;
+        lightAmt[0] = Limit(minYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
+        lightAmt[1] = Limit(midYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
+        lightAmt[2] = Limit(maxYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
 
-        oneOverZ[0] = 1.0f / minYVert.GetPosition().GetW();
-        oneOverZ[1] = 1.0f / midYVert.GetPosition().GetW();
-        oneOverZ[2] = 1.0f / maxYVert.GetPosition().GetW();
+        oneOverZ[0] = 1.0f / minYVert.getPosition().getW();
+        oneOverZ[1] = 1.0f / midYVert.getPosition().getW();
+        oneOverZ[2] = 1.0f / maxYVert.getPosition().getW();
 
-        texCoordX[0] = minYVert.GetTexCoords().GetX() * oneOverZ[0];
-        texCoordX[1] = midYVert.GetTexCoords().GetX() * oneOverZ[1];
-        texCoordX[2] = maxYVert.GetTexCoords().GetX() * oneOverZ[2];
+        texCoordX[0] = minYVert.getTexCoords().getX() * oneOverZ[0];
+        texCoordX[1] = midYVert.getTexCoords().getX() * oneOverZ[1];
+        texCoordX[2] = maxYVert.getTexCoords().getX() * oneOverZ[2];
 
-        texCoordY[0] = minYVert.GetTexCoords().GetY() * oneOverZ[0];
-        texCoordY[1] = midYVert.GetTexCoords().GetY() * oneOverZ[1];
-        texCoordY[2] = maxYVert.GetTexCoords().GetY() * oneOverZ[2];
+        texCoordY[0] = minYVert.getTexCoords().getY() * oneOverZ[0];
+        texCoordY[1] = midYVert.getTexCoords().getY() * oneOverZ[1];
+        texCoordY[2] = maxYVert.getTexCoords().getY() * oneOverZ[2];
 
         texCoordXXStep = FindStepX(texCoordX, minYVert, midYVert, maxYVert, oneOverdX);
         texCoordXYStep = FindStepY(texCoordX, minYVert, midYVert, maxYVert, oneOverdY);
@@ -66,63 +66,63 @@ public class Interpolation {
         lightAmtYStep = FindStepY(lightAmt, minYVert, midYVert, maxYVert, oneOverdY);
     }
 
-    public float GetTexCoordX(int index) {
+    public float getTexCoordX(int index) {
         return texCoordX[index];
     }
 
-    public float GetTexCoordY(int index) {
+    public float getTexCoordY(int index) {
         return texCoordY[index];
     }
 
-    public float GetOneOverZ(int index) {
+    public float getOneOverZ(int index) {
         return oneOverZ[index];
     }
 
-    public float GetDepth(int index) {
+    public float getDepth(int index) {
         return depth[index];
     }
 
-    public float GetLightAmt(int index) {
+    public float getLightAmt(int index) {
         return lightAmt[index];
     }
 
-    public float GetTexCoordXXStep() {
+    public float getTexCoordXXStep() {
         return texCoordXXStep;
     }
 
-    public float GetTexCoordXYStep() {
+    public float getTexCoordXYStep() {
         return texCoordXYStep;
     }
 
-    public float GetTexCoordYXStep() {
+    public float getTexCoordYXStep() {
         return texCoordYXStep;
     }
 
-    public float GetTexCoordYYStep() {
+    public float getTexCoordYYStep() {
         return texCoordYYStep;
     }
 
-    public float GetOneOverZXStep() {
+    public float getOneOverZXStep() {
         return oneOverZXStep;
     }
 
-    public float GetOneOverZYStep() {
+    public float getOneOverZYStep() {
         return oneOverZYStep;
     }
 
-    public float GetDepthXStep() {
+    public float getDepthXStep() {
         return depthXStep;
     }
 
-    public float GetDepthYStep() {
+    public float getDepthYStep() {
         return depthYStep;
     }
 
-    public float GetLightAmtXStep() {
+    public float getLightAmtXStep() {
         return lightAmtXStep;
     }
 
-    public float GetLightAmtYStep() {
+    public float getLightAmtYStep() {
         return lightAmtYStep;
     }
 
@@ -130,18 +130,18 @@ public class Interpolation {
                             Vertex maxYVert, float oneOverdX) {
         return
                 (((values[1] - values[2]) *
-                        (minYVert.GetY() - maxYVert.GetY())) -
+                        (minYVert.getY() - maxYVert.getY())) -
                         ((values[0] - values[2]) *
-                                (midYVert.GetY() - maxYVert.GetY()))) * oneOverdX;
+                                (midYVert.getY() - maxYVert.getY()))) * oneOverdX;
     }
 
     private float FindStepY(float[] values, Vertex minYVert, Vertex midYVert,
                             Vertex maxYVert, float oneOverdY) {
         return
                 (((values[1] - values[2]) *
-                        (minYVert.GetX() - maxYVert.GetX())) -
+                        (minYVert.getX() - maxYVert.getX())) -
                         ((values[0] - values[2]) *
-                                (midYVert.GetX() - maxYVert.GetX()))) * oneOverdY;
+                                (midYVert.getX() - maxYVert.getX()))) * oneOverdY;
     }
 
     private float Limit(float val) {

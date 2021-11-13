@@ -60,19 +60,19 @@ public class RenderSceneTriangle extends ImageCG {
     private void ClipPolygonComponent(List<Vertex> vertices, int componentIndex,
                                       float componentFactor, List<Vertex> result) {
         Vertex previousVertex = vertices.get(vertices.size() - 1);
-        float previousComponent = previousVertex.Get(componentIndex) * componentFactor;
-        boolean previousInside = previousComponent <= previousVertex.GetPosition().GetW();
+        float previousComponent = previousVertex.get(componentIndex) * componentFactor;
+        boolean previousInside = previousComponent <= previousVertex.getPosition().getW();
 
         Iterator<Vertex> it = vertices.iterator();
         while (it.hasNext()) {
             Vertex currentVertex = it.next();
-            float currentComponent = currentVertex.Get(componentIndex) * componentFactor;
-            boolean currentInside = currentComponent <= currentVertex.GetPosition().GetW();
+            float currentComponent = currentVertex.get(componentIndex) * componentFactor;
+            boolean currentInside = currentComponent <= currentVertex.getPosition().getW();
 
             if (currentInside ^ previousInside) {
-                float lerpAmt = (previousVertex.GetPosition().GetW() - previousComponent) /
-                        ((previousVertex.GetPosition().GetW() - previousComponent) -
-                                (currentVertex.GetPosition().GetW() - currentComponent));
+                float lerpAmt = (previousVertex.getPosition().getW() - previousComponent) /
+                        ((previousVertex.getPosition().getW() - previousComponent) -
+                                (currentVertex.getPosition().getW() - currentComponent));
 
                 result.add(previousVertex.Lerp(currentVertex, lerpAmt));
             }
@@ -89,8 +89,8 @@ public class RenderSceneTriangle extends ImageCG {
 
     private void FillTriangle(Vertex v1, Vertex v2, Vertex v3, ImageCG texture, ColorCG color, boolean tex_paint, List<Source> light_array) {
         Matrix screenSpaceTransform =
-                new Matrix().CreateScreenSpace(GetWidth() / 2, GetHeight() / 2);
-        Matrix identity = new Matrix().CreateIdentity();
+                new Matrix().createScreenSpace(getWidth() / 2, getHeight() / 2);
+        Matrix identity = new Matrix().createIdentity();
         Vertex minYVert = v1.Transform(screenSpaceTransform, identity).PerspectiveDivide();
         Vertex midYVert = v2.Transform(screenSpaceTransform, identity).PerspectiveDivide();
         Vertex maxYVert = v3.Transform(screenSpaceTransform, identity).PerspectiveDivide();
@@ -99,19 +99,19 @@ public class RenderSceneTriangle extends ImageCG {
             return;
         }
 
-        if (maxYVert.GetY() < midYVert.GetY()) {
+        if (maxYVert.getY() < midYVert.getY()) {
             Vertex temp = maxYVert;
             maxYVert = midYVert;
             midYVert = temp;
         }
 
-        if (midYVert.GetY() < minYVert.GetY()) {
+        if (midYVert.getY() < minYVert.getY()) {
             Vertex temp = midYVert;
             midYVert = minYVert;
             minYVert = temp;
         }
 
-        if (maxYVert.GetY() < midYVert.GetY()) {
+        if (maxYVert.getY() < midYVert.getY()) {
             Vertex temp = maxYVert;
             maxYVert = midYVert;
             midYVert = temp;
@@ -142,8 +142,8 @@ public class RenderSceneTriangle extends ImageCG {
             right = temp;
         }
 
-        int yStart = b.GetYStart();
-        int yEnd = b.GetYEnd();
+        int yStart = b.getYStart();
+        int yEnd = b.getYEnd();
         for (int j = yStart; j < yEnd; j++) {
             DrawLine(gradients, left, right, j, texture, color, tex_paint);
             left.Step();
@@ -152,28 +152,28 @@ public class RenderSceneTriangle extends ImageCG {
     }
 
     private void DrawLine(Interpolation gradients, Edge left, Edge right, int j, ImageCG texture, ColorCG color, boolean tex_paint) {
-        int xMin = (int) Math.ceil(left.GetX());
-        int xMax = (int) Math.ceil(right.GetX());
-        float xDopStep = xMin - left.GetX();
-        float texCoordXXStep = gradients.GetTexCoordXXStep();
-        float texCoordYXStep = gradients.GetTexCoordYXStep();
-        float oneOverZXStep = gradients.GetOneOverZXStep();
-        float depthXStep = gradients.GetDepthXStep();
-        float lightAmtXStep = gradients.GetLightAmtXStep();
+        int xMin = (int) Math.ceil(left.getX());
+        int xMax = (int) Math.ceil(right.getX());
+        float xDopStep = xMin - left.getX();
+        float texCoordXXStep = gradients.getTexCoordXXStep();
+        float texCoordYXStep = gradients.getTexCoordYXStep();
+        float oneOverZXStep = gradients.getOneOverZXStep();
+        float depthXStep = gradients.getDepthXStep();
+        float lightAmtXStep = gradients.getLightAmtXStep();
 
-        float texCoordX = left.GetTexCoordX() + texCoordXXStep * xDopStep;
-        float texCoordY = left.GetTexCoordY() + texCoordYXStep * xDopStep;
-        float oneOnZ = left.GetOneOverZ() + oneOverZXStep * xDopStep;
-        float depth = left.GetDepth() + depthXStep * xDopStep;
-        float lightAmt = left.GetLightAmt() + lightAmtXStep * xDopStep;
+        float texCoordX = left.getTexCoordX() + texCoordXXStep * xDopStep;
+        float texCoordY = left.getTexCoordY() + texCoordYXStep * xDopStep;
+        float oneOnZ = left.getOneOverZ() + oneOverZXStep * xDopStep;
+        float depth = left.getDepth() + depthXStep * xDopStep;
+        float lightAmt = left.getLightAmt() + lightAmtXStep * xDopStep;
         for (int i = xMin; i < xMax; i++) {
-            int index = i + j * GetWidth();
+            int index = i + j * getWidth();
             if (depth < zBuffer[index]) {
                 zBuffer[index] = depth;
                 if (tex_paint) {
                     float z = 1.0f / oneOnZ;
-                    int srcX = (int) ((texCoordX * z) * (float) (texture.GetWidth() - 1) + 0.5f);
-                    int srcY = (int) ((texCoordY * z) * (float) (texture.GetHeight() - 1) + 0.5f);
+                    int srcX = (int) ((texCoordX * z) * (float) (texture.getWidth() - 1) + 0.5f);
+                    int srcY = (int) ((texCoordY * z) * (float) (texture.getHeight() - 1) + 0.5f);
                     CopyPixel(i, j, srcX, srcY, texture, lightAmt);
                 } else {
                     DrawPixelLight(i, j, (byte) 0xFF,

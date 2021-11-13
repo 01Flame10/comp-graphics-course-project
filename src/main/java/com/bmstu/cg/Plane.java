@@ -32,13 +32,13 @@ public class Plane extends PrimitiveObject{
     public float findIntersection(Ray ray) {
         Vector4 ray_direction = ray.getRayDirection();
 
-        float a = ray_direction.Dot3(normal);
+        float a = ray_direction.dot3(normal);
 
         if (a == 0) {
                 return -1;
         }
         else {
-            float b = normal.Dot3(ray.getRayOrigin().Add(normal.Mul(distance).Negative()));
+            float b = normal.dot3(ray.getRayOrigin().add(normal.multiply(distance).negative()));
             return -1*b/a;
         }
     }

@@ -17,72 +17,72 @@ public class Edge {
     private float lightAmtStep;
 
     public Edge(Interpolation interp, Vertex minYVert, Vertex maxYVert, int minYVertIndex) {
-        yStart = (int) Math.ceil(minYVert.GetY());
-        yEnd = (int) Math.ceil(maxYVert.GetY());
+        yStart = (int) Math.ceil(minYVert.getY());
+        yEnd = (int) Math.ceil(maxYVert.getY());
 
-        float yDist = maxYVert.GetY() - minYVert.GetY();
-        float xDist = maxYVert.GetX() - minYVert.GetX();
+        float yDist = maxYVert.getY() - minYVert.getY();
+        float xDist = maxYVert.getX() - minYVert.getX();
 
-        float yPrestep = yStart - minYVert.GetY();
+        float yPrestep = yStart - minYVert.getY();
         xStep = xDist / yDist;
-        x = minYVert.GetX() + yPrestep * xStep;
-        float xPrestep = x - minYVert.GetX();
+        x = minYVert.getX() + yPrestep * xStep;
+        float xPrestep = x - minYVert.getX();
 
-        texCoordX = interp.GetTexCoordX(minYVertIndex) +
-                interp.GetTexCoordXXStep() * xPrestep +
-                interp.GetTexCoordXYStep() * yPrestep;
-        texCoordXStep = interp.GetTexCoordXYStep() + interp.GetTexCoordXXStep() * xStep;
+        texCoordX = interp.getTexCoordX(minYVertIndex) +
+                interp.getTexCoordXXStep() * xPrestep +
+                interp.getTexCoordXYStep() * yPrestep;
+        texCoordXStep = interp.getTexCoordXYStep() + interp.getTexCoordXXStep() * xStep;
 
-        texCoordY = interp.GetTexCoordY(minYVertIndex) +
-                interp.GetTexCoordYXStep() * xPrestep +
-                interp.GetTexCoordYYStep() * yPrestep;
-        texCoordYStep = interp.GetTexCoordYYStep() + interp.GetTexCoordYXStep() * xStep;
+        texCoordY = interp.getTexCoordY(minYVertIndex) +
+                interp.getTexCoordYXStep() * xPrestep +
+                interp.getTexCoordYYStep() * yPrestep;
+        texCoordYStep = interp.getTexCoordYYStep() + interp.getTexCoordYXStep() * xStep;
 
-        oneOverZ = interp.GetOneOverZ(minYVertIndex) +
-                interp.GetOneOverZXStep() * xPrestep +
-                interp.GetOneOverZYStep() * yPrestep;
-        oneOverZStep = interp.GetOneOverZYStep() + interp.GetOneOverZXStep() * xStep;
+        oneOverZ = interp.getOneOverZ(minYVertIndex) +
+                interp.getOneOverZXStep() * xPrestep +
+                interp.getOneOverZYStep() * yPrestep;
+        oneOverZStep = interp.getOneOverZYStep() + interp.getOneOverZXStep() * xStep;
 
-        depth = interp.GetDepth(minYVertIndex) +
-                interp.GetDepthXStep() * xPrestep +
-                interp.GetDepthYStep() * yPrestep;
-        depthStep = interp.GetDepthYStep() + interp.GetDepthXStep() * xStep;
+        depth = interp.getDepth(minYVertIndex) +
+                interp.getDepthXStep() * xPrestep +
+                interp.getDepthYStep() * yPrestep;
+        depthStep = interp.getDepthYStep() + interp.getDepthXStep() * xStep;
 
-        lightAmt = interp.GetLightAmt(minYVertIndex) +
-                interp.GetLightAmtXStep() * xPrestep +
-                interp.GetLightAmtYStep() * yPrestep;
-        lightAmtStep = interp.GetLightAmtYStep() + interp.GetLightAmtXStep() * xStep;
+        lightAmt = interp.getLightAmt(minYVertIndex) +
+                interp.getLightAmtXStep() * xPrestep +
+                interp.getLightAmtYStep() * yPrestep;
+        lightAmtStep = interp.getLightAmtYStep() + interp.getLightAmtXStep() * xStep;
     }
 
-    public float GetX() {
+    public float getX() {
         return x;
     }
 
-    public int GetYStart() {
+    public int getYStart() {
         return yStart;
     }
 
-    public int GetYEnd() {
+    public int getYEnd() {
         return yEnd;
     }
 
-    public float GetTexCoordX() {
+    public float getTexCoordX() {
         return texCoordX;
     }
 
-    public float GetTexCoordY() {
+    public float getTexCoordY() {
         return texCoordY;
     }
 
-    public float GetOneOverZ() {
+    public float getOneOverZ() {
         return oneOverZ;
     }
 
-    public float GetDepth() {
+    public float getDepth() {
         return depth;
     }
 
-    public float GetLightAmt() {
+    public float getLightAmt() {
         return lightAmt;
     }
 

@@ -54,15 +54,15 @@ public class ImageCG {
         opacity = opacityv;
     }
 
-    public int GetWidth() {
+    public int getWidth() {
         return width_image;
     }
 
-    public int GetHeight() {
+    public int getHeight() {
         return height_image;
     }
 
-    public byte GetComponent(int index) {
+    public byte getComponent(int index) {
         if (index >= 0 && index < m_components.length)
             return m_components[index];
         else
@@ -91,20 +91,20 @@ public class ImageCG {
 
     public void CopyPixel(int destX, int destY, int srcX, int srcY, ImageCG src, float lightAmt) {
         int destIndex = (destX + destY * width_image) * 4;
-        int srcIndex = (srcX + srcY * src.GetWidth()) * 4;
+        int srcIndex = (srcX + srcY * src.getWidth()) * 4;
 
-        m_components[destIndex] = (byte) ((src.GetComponent(srcIndex) & 0xFF) * lightAmt);
-        m_components[destIndex + 1] = (byte) ((src.GetComponent(srcIndex + 1) & 0xFF) * lightAmt);
-        m_components[destIndex + 2] = (byte) ((src.GetComponent(srcIndex + 2) & 0xFF) * lightAmt);
-        m_components[destIndex + 3] = (byte) ((src.GetComponent(srcIndex + 3) & 0xFF) * lightAmt);
+        m_components[destIndex] = (byte) ((src.getComponent(srcIndex) & 0xFF) * lightAmt);
+        m_components[destIndex + 1] = (byte) ((src.getComponent(srcIndex + 1) & 0xFF) * lightAmt);
+        m_components[destIndex + 2] = (byte) ((src.getComponent(srcIndex + 2) & 0xFF) * lightAmt);
+        m_components[destIndex + 3] = (byte) ((src.getComponent(srcIndex + 3) & 0xFF) * lightAmt);
     }
 
     public float[] get_pixel_color(int srcX, int srcY) {
 
-        int srcIndex = (srcX + srcY * this.GetWidth()) * 4;
-        float r = (this.GetComponent(srcIndex + 3) & 0xFF) / 255.f;
-        float g = (this.GetComponent(srcIndex + 2) & 0xFF) / 255.f;
-        float b = (this.GetComponent(srcIndex + 1) & 0xFF) / 255.f;
+        int srcIndex = (srcX + srcY * this.getWidth()) * 4;
+        float r = (this.getComponent(srcIndex + 3) & 0xFF) / 255.f;
+        float g = (this.getComponent(srcIndex + 2) & 0xFF) / 255.f;
+        float b = (this.getComponent(srcIndex + 1) & 0xFF) / 255.f;
         return new float[]{r, g, b};
     }
 

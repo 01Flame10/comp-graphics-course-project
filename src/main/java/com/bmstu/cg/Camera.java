@@ -14,16 +14,16 @@ public class Camera {
     public Camera(Matrix projection) {
         this.projection = projection;
         this.transform = new Transform();
-        this.CameraRight = Y_AXIS.Cross(getCameraDirection()).Normalized();
-        this.CameraDown = this.CameraRight.Cross(getCameraDirection()).Normalized();
+        this.CameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
+        this.CameraDown = this.CameraRight.cross(getCameraDirection()).normalized();
     }
 
     public Vector4 getCameraPosition() {
-        return GetTransform().GetTransformedPos();
+        return transform.getTransformedPos();
     }
 
     public Vector4 getCameraDirection() {
-        return GetTransform().GetRot().GetForward();
+        return transform.getRot().getForward();
     }
 
     public Vector4 getCameraRight() {
@@ -34,55 +34,52 @@ public class Camera {
         return CameraDown;
     }
 
-    private Transform GetTransform() {
-        return transform;
-    }
 
-    public Matrix GetViewProjection() {
-        Matrix cameraRotation = GetTransform().GetTransformedRot().Negative().ToRotationMatrix();
-        Vector4 cameraPos = GetTransform().GetTransformedPos().Mul(-1);
+    public Matrix getViewProjection() {
+        Matrix cameraRotation = transform.getTransformedRot().Negative().ToRotationMatrix();
+        Vector4 cameraPos = transform.getTransformedPos().multiply(-1);
 
-        Matrix cameraTranslation = new Matrix().CreateMovement(cameraPos.GetX(), cameraPos.GetY(), cameraPos.GetZ());
+        Matrix cameraTranslation = new Matrix().createMovement(cameraPos.getX(), cameraPos.getY(), cameraPos.getZ());
 
-        return projection.Mul(cameraRotation.Mul(cameraTranslation));
+        return projection.multiply(cameraRotation.multiply(cameraTranslation));
     }
 
 
-    public void Update(Input input, float delta) {
+    public void update(Input input, float delta) {
         final float sensitivityX = 2.66f * delta;
         final float sensitivityY = 2.0f * delta;
         final float movAmt = 5.0f * delta;
 
+        System.out.println("KEY: " + input.getKey(KeyEvent.VK_W));
+        if (input.getKey(KeyEvent.VK_W))
+            move(transform.getRot().getForward(), movAmt);
+        if (input.getKey(KeyEvent.VK_S))
+            move(transform.getRot().getForward(), -movAmt);
+        if (input.getKey(KeyEvent.VK_A))
+            move(transform.getRot().getLeft(), movAmt);
+        if (input.getKey(KeyEvent.VK_D))
+            move(transform.getRot().getRight(), movAmt);
 
-        if (input.GetKey(KeyEvent.VK_W))
-            Move(GetTransform().GetRot().GetForward(), movAmt);
-        if (input.GetKey(KeyEvent.VK_S))
-            Move(GetTransform().GetRot().GetForward(), -movAmt);
-        if (input.GetKey(KeyEvent.VK_A))
-            Move(GetTransform().GetRot().GetLeft(), movAmt);
-        if (input.GetKey(KeyEvent.VK_D))
-            Move(GetTransform().GetRot().GetRight(), movAmt);
-
-        if (input.GetKey(KeyEvent.VK_RIGHT))
-            Rotate(Y_AXIS, sensitivityX);
-        if (input.GetKey(KeyEvent.VK_LEFT))
-            Rotate(Y_AXIS, -sensitivityX);
-        if (input.GetKey(KeyEvent.VK_DOWN))
-            Rotate(GetTransform().GetRot().GetRight(), sensitivityY);
-        if (input.GetKey(KeyEvent.VK_UP))
-            Rotate(GetTransform().GetRot().GetRight(), -sensitivityY);
+        if (input.getKey(KeyEvent.VK_RIGHT))
+            rotate(Y_AXIS, sensitivityX);
+        if (input.getKey(KeyEvent.VK_LEFT))
+            rotate(Y_AXIS, -sensitivityX);
+        if (input.getKey(KeyEvent.VK_DOWN))
+            rotate(transform.getRot().getRight(), sensitivityY);
+        if (input.getKey(KeyEvent.VK_UP))
+            rotate(transform.getRot().getRight(), -sensitivityY);
     }
 
 
-    public void Move(Vector4 dir, float amt) {
-        transform = GetTransform().SetPos(GetTransform().GetPos().Add(dir.Mul(amt)));
-        this.CameraRight = Y_AXIS.Cross(getCameraDirection()).Normalized();
-        this.CameraDown = this.CameraRight.Cross(getCameraDirection());
+    public void move(Vector4 dir, float amt) {
+        transform = transform.setPos(transform.getPos().add(dir.multiply(amt)));
+        this.CameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
+        this.CameraDown = this.CameraRight.cross(getCameraDirection());
     }
 
-    public void Rotate(Vector4 axis, float angle) {
-        transform = GetTransform().Rotate(new Quaternion(axis, angle));
-        this.CameraRight = Y_AXIS.Cross(getCameraDirection()).Normalized();
-        this.CameraDown = this.CameraRight.Cross(getCameraDirection());
+    public void rotate(Vector4 axis, float angle) {
+        transform = transform.rotate(new Quaternion(axis, angle));
+        this.CameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
+        this.CameraDown = this.CameraRight.cross(getCameraDirection());
     }
 }

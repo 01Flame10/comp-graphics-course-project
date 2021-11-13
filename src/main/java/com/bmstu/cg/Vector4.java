@@ -17,97 +17,97 @@ public class Vector4 {
         this(x, y, z, 1.0f);
     }
 
-    public float GetX() {
+    public float getX() {
         return x;
     }
 
-    public float GetY() {
+    public float getY() {
         return y;
     }
 
-    public float GetZ() {
+    public float getZ() {
         return z;
     }
 
-    public float GetW() {
+    public float getW() {
         return w;
     }
 
-    public float Length() {
+    public float length() {
         return (float) Math.sqrt(x * x + y * y + z * z + w * w);
     }
 
-    public float Dot3(Vector4 r) {
-        return x * r.GetX() + y * r.GetY() + z * r.GetZ();// + w * r.GetW();
+    public float dot3(Vector4 r) {
+        return x * r.getX() + y * r.getY() + z * r.getZ();// + w * r.getW();
     }
 
-    public float Dot(Vector4 r) {
-        return x * r.GetX() + y * r.GetY() + z * r.GetZ() + w * r.GetW();
+    public float dot(Vector4 r) {
+        return x * r.getX() + y * r.getY() + z * r.getZ() + w * r.getW();
     }
 
-    public Vector4 Cross(Vector4 r) {
-        float x_ = y * r.GetZ() - z * r.GetY();
-        float y_ = z * r.GetX() - x * r.GetZ();
-        float z_ = x * r.GetY() - y * r.GetX();
+    public Vector4 cross(Vector4 r) {
+        float x_ = y * r.getZ() - z * r.getY();
+        float y_ = z * r.getX() - x * r.getZ();
+        float z_ = x * r.getY() - y * r.getX();
 
         return new Vector4(x_, y_, z_, 0);
     }
 
-    public Vector4 Normalized() {
-        float length = Length3();
+    public Vector4 normalized() {
+        float length = length3();
 
         return new Vector4(x / length, y / length, z / length, w / length);
     }
 
-    public Vector4 Rotate(Vector4 axis, float angle) {
+    public Vector4 rotate(Vector4 axis, float angle) {
         float sinAngle = (float) Math.sin(-angle);
         float cosAngle = (float) Math.cos(-angle);
 
-        return this.Cross(axis.Mul(sinAngle)).Add(
-                (this.Mul(cosAngle)).Add(
-                        axis.Mul(this.Dot(axis.Mul(1 - cosAngle)))));
+        return this.cross(axis.multiply(sinAngle)).add(
+                (this.multiply(cosAngle)).add(
+                        axis.multiply(this.dot(axis.multiply(1 - cosAngle)))));
     }
 
-    public Vector4 Rotate(Quaternion rotation) {
+    public Vector4 rotate(Quaternion rotation) {
         Quaternion w = rotation.Mul(this).Mul(rotation.Negative());
 
-        return new Vector4(w.GetX(), w.GetY(), w.GetZ(), 1.0f);
+        return new Vector4(w.getX(), w.getY(), w.getZ(), 1.0f);
     }
 
-    public Vector4 Lerp(Vector4 dest, float lerpFactor) {
-        return dest.Sub(this).Mul(lerpFactor).Add(this);
+    public Vector4 lerp(Vector4 dest, float lerpFactor) {
+        return dest.substitute(this).multiply(lerpFactor).add(this);
     }
 
-    public Vector4 Add(Vector4 r) {
-        return new Vector4(x + r.GetX(), y + r.GetY(), z + r.GetZ(), w + r.GetW());
+    public Vector4 add(Vector4 r) {
+        return new Vector4(x + r.getX(), y + r.getY(), z + r.getZ(), w + r.getW());
     }
 
-    public Vector4 Add(float r) {
+    public Vector4 add(float r) {
         return new Vector4(x + r, y + r, z + r, w + r);
     }
 
-    public Vector4 Sub(Vector4 r) {
-        return new Vector4(x - r.GetX(), y - r.GetY(), z - r.GetZ(), w - r.GetW());
+    public Vector4 substitute(Vector4 r) {
+        return new Vector4(x - r.getX(), y - r.getY(), z - r.getZ(), w - r.getW());
     }
 
-    public Vector4 Sub(float r) {
+    public Vector4 substitute(float r) {
         return new Vector4(x - r, y - r, z - r, w - r);
     }
 
-    public Vector4 Mul(Vector4 r) {
-        return new Vector4(x * r.GetX(), y * r.GetY(), z * r.GetZ(), w * r.GetW());
+    public Vector4 multiply(Vector4 r) {
+        return new Vector4(x * r.getX(), y * r.getY(), z * r.getZ(), w * r.getW());
     }
 
-    public Vector4 Mul(float r) {
+    public Vector4 multiply(float r) {
         return new Vector4(x * r, y * r, z * r, w * r);
     }
 
 
-    public Vector4 Negative() {
+    public Vector4 negative() {
         return new Vector4(-x, -y, -z, 1);
     }
 
-    public float Length3() {
+    public float length3() {
         return (float) Math.sqrt((x * x) + (y * y) + (z * z));
     }
 

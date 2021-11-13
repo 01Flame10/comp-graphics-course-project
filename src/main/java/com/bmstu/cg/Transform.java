@@ -1,10 +1,10 @@
 package com.bmstu.cg;
 
 public class Transform {
-    private Vector4 pos_t;
-    private Quaternion rot_t;
-    private Vector4 scale_t;
-    private Vector4 rot_euler_t;
+    private final Vector4 position;
+    private final Quaternion rotation;
+    private final Vector4 scale;
+    private Vector4 eulerRotation;
 
     public Transform() {
         this(new Vector4(0, 0, 0, 0), new Vector4(1, 1, 1, 1));
@@ -14,68 +14,64 @@ public class Transform {
         this(pos, new Quaternion(0, 0, 0, 1), scale, new Vector4(0, 0, 0, 1));
     }
 
-    public Transform(Vector4 pos, Quaternion q, Vector4 scale) {
-        this(pos, q, scale, new Vector4(0, 0, 0, 1));
+    public Transform(Vector4 position, Quaternion rotation, Vector4 scale, Vector4 eulerRotation) {
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+        this.eulerRotation = eulerRotation;
     }
 
-    public Transform(Vector4 pos, Quaternion rot, Vector4 scale, Vector4 rot_euler) {
-        pos_t = pos;
-        rot_t = rot;
-        scale_t = scale;
-        rot_euler_t = rot_euler;
+    public Vector4 getTransformedPos() {
+        return position;
     }
 
-    public Vector4 GetTransformedPos() {
-        return pos_t;
+    public Quaternion getTransformedRot() {
+        return rotation;
     }
 
-    public Quaternion GetTransformedRot() {
-        return rot_t;
+    public Vector4 getPos() {
+        return position;
     }
 
-    public Vector4 GetPos() {
-        return pos_t;
+    public Quaternion getRot() {
+        return rotation;
     }
 
-    public Quaternion GetRot() {
-        return rot_t;
+    public Vector4 getEulerRot() {
+        return eulerRotation;
     }
 
-    public Vector4 GetEulerRot() {
-        return rot_euler_t;
+    public Vector4 getScale() {
+        return scale;
     }
 
-    public Vector4 GetScale() {
-        return scale_t;
+    public Transform setPos(Vector4 pos) {
+        return new Transform(pos, rotation, scale, eulerRotation);
     }
 
-    public Transform SetPos(Vector4 pos) {
-        return new Transform(pos, rot_t, scale_t, rot_euler_t);
+    public Transform setScale(Vector4 scale) {
+        return new Transform(position, rotation, scale, eulerRotation);
     }
 
-    public Transform SetScale(Vector4 scale) {
-        return new Transform(pos_t, rot_t, scale, rot_euler_t);
+    public Transform rotate(Quaternion rotation) {
+        return new Transform(position, rotation.Mul(this.rotation).Normalized(), scale, eulerRotation);
     }
 
-    public Transform Rotate(Quaternion rotation) {
-        return new Transform(pos_t, rotation.Mul(rot_t).Normalized(), scale_t, rot_euler_t);
-    }
-
-    public Transform RotateFromNull(float ox, float oy, float oz) {
-        rot_euler_t = new Vector4(ox, oy, oz, 1);
+    public Transform rotateFromNull(float ox, float oy, float oz) {
+        eulerRotation = new Vector4(ox, oy, oz, 1);
 
         float to_rad = (float) Math.PI / 180;
         Quaternion rotation = Quaternion.QuaternionFromEuler(ox * to_rad, oy * to_rad, oz * to_rad);
 
-        return new Transform(pos_t, rotation.Normalized(), scale_t, rot_euler_t);
+        return new Transform(position, rotation.Normalized(), scale, eulerRotation);
     }
 
-    public Matrix GetTransformation() {
-        Matrix translationMatrix = new Matrix().CreateMovement(pos_t.GetX(), pos_t.GetY(), pos_t.GetZ());
-        Matrix rotationMatrix = rot_t.ToRotationMatrix();
-        Matrix scaleMatrix = new Matrix().CreateScale(scale_t.GetX(), scale_t.GetY(), scale_t.GetZ());
+    public Matrix getTransformation() {
+        Matrix translationMatrix = new Matrix().createMovement(position.getX(), position.getY(), position.getZ());
+        Matrix rotationMatrix = rotation.ToRotationMatrix();
+        Matrix scaleMatrix = new Matrix().createScale(scale.getX(), scale.getY(), scale.getZ());
 
-        return translationMatrix.Mul(rotationMatrix.Mul(scaleMatrix));
+        return translationMatrix.multiply(rotationMatrix.multiply(scaleMatrix));
     }
 
 

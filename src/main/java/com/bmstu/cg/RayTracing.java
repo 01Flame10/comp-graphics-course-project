@@ -34,27 +34,27 @@ public class RayTracing {
 
     private static Vector4 RefractVector(Vector4 I, Vector4 N, float ior) {
         float eta = 1.0f / ior;
-        N = N.Negative();
-        float cosi = -I.Dot3(N);
+        N = N.negative();
+        float cosi = -I.dot3(N);
         if (cosi < 0) {
             cosi *= -1;
-            N = N.Negative();
+            N = N.negative();
             eta = 1.f / eta;
         }
         float k = 1 - eta * eta * (1 - cosi * cosi);
         if (k < 0)
             return null;
-        return I.Mul(eta).Add(N.Mul(eta * cosi - (float) Math.sqrt(k))).Normalized();
+        return I.multiply(eta).add(N.multiply(eta * cosi - (float) Math.sqrt(k))).normalized();
     }
 
     private static Vector4 ReflectVector(Vector4 I, Vector4 N) {
-        return I.Add(N.Mul(N.Dot3(I.Negative())).Mul(2)).Normalized();
+        return I.add(N.multiply(N.dot3(I.negative())).multiply(2)).normalized();
     }
 
 
     private static ColorCG getColor(Vector4 intersection_position, Vector4 intersecting_ray_direction, List<PrimitiveObject> scene_objects, int index_of_nearest_object, int index_of_first_object, List<Source> light_sources, float accuracy, float ambientlight, int recur_deep) {
         ColorCG nearest_object_color = scene_objects.get(index_of_nearest_object).getColor(intersection_position);
-        Vector4 nearest_object_normal = scene_objects.get(index_of_nearest_object).getNormalAt(intersection_position).Normalized();
+        Vector4 nearest_object_normal = scene_objects.get(index_of_nearest_object).getNormalAt(intersection_position).normalized();
 
 
         ColorCG final_color = nearest_object_color.ColorMul(ambientlight);
@@ -64,16 +64,16 @@ public class RayTracing {
 
         // тени
         for (int light_index = 0; light_index < light_sources.size(); light_index++) {
-            Vector4 light_direction = light_sources.get(light_index).getLightPosition().Sub(intersection_position).Normalized();
+            Vector4 light_direction = light_sources.get(light_index).getLightPosition().substitute(intersection_position).normalized();
 
-            float cosine_angle = nearest_object_normal.Dot3(light_direction);
+            float cosine_angle = nearest_object_normal.dot3(light_direction);
 
             if (cosine_angle > 0) {
                 boolean shadowed = false;
 
-                Vector4 distance_to_light = light_sources.get(light_index).getLightPosition().Sub(intersection_position);
-                float distance_to_light_magnitude = distance_to_light.Length3();
-                Vector4 distance_to_light_norm = distance_to_light.Normalized();
+                Vector4 distance_to_light = light_sources.get(light_index).getLightPosition().substitute(intersection_position);
+                float distance_to_light_magnitude = distance_to_light.length3();
+                Vector4 distance_to_light_norm = distance_to_light.normalized();
                 Ray shadow_ray = new Ray(intersection_position, distance_to_light_norm);
                 List<Float> secondary_intersections = new ArrayList();
 
@@ -91,13 +91,13 @@ public class RayTracing {
                     }
                 }
                 if (shadowed == false) {
-                    float intensive_cos = cosine_angle * light_sources.get(light_index).getLightIntensive() / (nearest_object_normal.Length3() * light_direction.Length3());
+                    float intensive_cos = cosine_angle * light_sources.get(light_index).getLightIntensive() / (nearest_object_normal.length3() * light_direction.length3());
                     final_color = final_color.ColorAdd(nearest_object_color.ColorMul(light_sources.get(light_index).getLightColor()).ColorMul(intensive_cos));
                     // Находим отраженный луч 
                     if (nearest_object_color.specular > 0) {
-                        Vector4 scalar1 = nearest_object_normal.Mul(cosine_angle).Mul(2);
-                        Vector4 reflection_direction = scalar1.Sub(light_direction).Normalized();
-                        float specular = reflection_direction.Dot3(intersecting_ray_direction.Negative());
+                        Vector4 scalar1 = nearest_object_normal.multiply(cosine_angle).multiply(2);
+                        Vector4 reflection_direction = scalar1.substitute(light_direction).normalized();
+                        float specular = reflection_direction.dot3(intersecting_ray_direction.negative());
                         if (specular > 0.1) {
                             float specular_object = nearest_object_color.specular * 100;
                             specular = (float) Math.pow(specular, specular_object);
@@ -123,7 +123,7 @@ public class RayTracing {
             int index_of_nearest_object_with_reflection = NearestObjectIndex(reflection_intersections);
             if (index_of_nearest_object_with_reflection != -1 && recur_deep < 10) {
                 if (reflection_intersections.get(index_of_nearest_object_with_reflection) > 0.01) {
-                    Vector4 reflection_intersection_position = intersection_position.Add(reflection_direction.Mul(reflection_intersections.get(index_of_nearest_object_with_reflection)));
+                    Vector4 reflection_intersection_position = intersection_position.add(reflection_direction.multiply(reflection_intersections.get(index_of_nearest_object_with_reflection)));
                     Vector4 reflection_intersection_ray_direction = reflection_direction;
 
                     ColorCG reflection_intersection_color = getColor(reflection_intersection_position, reflection_intersection_ray_direction, scene_objects, index_of_nearest_object_with_reflection, index_of_nearest_object_with_reflection, light_sources, 0.0001f, ambientlight, ++recur_deep);
@@ -156,7 +156,7 @@ public class RayTracing {
                 if (index_of_nearest_object_with_refraction != -1 && recur_deep < 10) {
                     if (refraction_intersections.get(index_of_nearest_object_with_refraction) > 0.1) {
 
-                        Vector4 refraction_intersection_position = intersection_position.Add(refraction_direction.Mul(refraction_intersections.get(index_of_nearest_object_with_refraction)));
+                        Vector4 refraction_intersection_position = intersection_position.add(refraction_direction.multiply(refraction_intersections.get(index_of_nearest_object_with_refraction)));
                         Vector4 refraction_intersection_ray_direction = refraction_direction;
 
                         ColorCG refraction_intersection_color = getColor(refraction_intersection_position, refraction_intersection_ray_direction, scene_objects, index_of_nearest_object_with_refraction, index_of_nearest_object_with_refraction, light_sources, 0.0001f, ambientlight, ++recur_deep);
@@ -282,7 +282,7 @@ public class RayTracing {
                             yamnt = result[1];
                         }
                         Vector4 cam_ray_origin = campos;
-                        Vector4 cam_ray_direction = camdir.Add(camright.Mul(xamnt - 0.5f).Add(camdown.Mul(yamnt - 0.5f))).Normalized();
+                        Vector4 cam_ray_direction = camdir.add(camright.multiply(xamnt - 0.5f).add(camdown.multiply(yamnt - 0.5f))).normalized();
                         Ray cam_ray = new Ray(cam_ray_origin, cam_ray_direction);
                         ArrayList<Float> intersections = new ArrayList();
                         for (int index = 0; index < scene_objects.size(); index++) {
@@ -296,7 +296,7 @@ public class RayTracing {
                         } else {
                             if (intersections.get(index_of_nearest_object) > 0.00001) {
 
-                                Vector4 intersection_position = cam_ray_origin.Add(cam_ray_direction.Mul(intersections.get(index_of_nearest_object)));
+                                Vector4 intersection_position = cam_ray_origin.add(cam_ray_direction.multiply(intersections.get(index_of_nearest_object)));
                                 Vector4 intersecting_ray_direction = cam_ray_direction;
                                 int recur_deep = 0;
 

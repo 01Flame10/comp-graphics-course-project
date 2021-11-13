@@ -38,7 +38,7 @@ public class Torus extends PrimitiveObject {
         is_texture = true;
     }
 
-    public static float GetCoord(float i1, float i2, float w1,
+    public static float getCoord(float i1, float i2, float w1,
                                  float w2, float p) {
         return ((p - i1) / (i2 - i1)) * (w2 - w1) + w1;
     }
@@ -57,12 +57,12 @@ public class Torus extends PrimitiveObject {
 
             Vector4 normal = getNormalAt(pos);
 
-            float x1 = (float) (0.5 + Math.atan2(normal.GetZ(), normal.GetX()) / (Math.PI * 2.0f)) * texture.GetWidth();//GetCoord(0.0f, (float)Math.PI * 2.0f, 0.0f, texture.GetWidth() - 1, theta);//theta * texture.GetWidth();//
-            float y1 = (float) (0.5 + Math.atan2(normal.GetY(), Math.sqrt(normal.GetX() * normal.GetX() + normal.GetZ() * normal.GetZ()) - this.sweptRadius) / (Math.PI * 2.0f)) * texture.GetHeight();//GetCoord(0.0f, (float)Math.PI, 0.0f, texture.GetHeight() - 1, phi);//phi * texture.GetHeight();//
+            float x1 = (float) (0.5 + Math.atan2(normal.getZ(), normal.getX()) / (Math.PI * 2.0f)) * texture.getWidth();//getCoord(0.0f, (float)Math.PI * 2.0f, 0.0f, texture.getWidth() - 1, theta);//theta * texture.getWidth();//
+            float y1 = (float) (0.5 + Math.atan2(normal.getY(), Math.sqrt(normal.getX() * normal.getX() + normal.getZ() * normal.getZ()) - this.sweptRadius) / (Math.PI * 2.0f)) * texture.getHeight();//getCoord(0.0f, (float)Math.PI, 0.0f, texture.getHeight() - 1, phi);//phi * texture.getHeight();//
 
             int i1 = (int) x1, j1 = (int) y1;
             //System.out.println(x1 + " " + y1);
-            if (i1 >= 0 && j1 >= 0 && i1 < texture.GetWidth() && j1 < texture.GetHeight()) {
+            if (i1 >= 0 && j1 >= 0 && i1 < texture.getWidth() && j1 < texture.getHeight()) {
                 float[] colors = texture.get_pixel_color(i1, j1);
                 ColorCG color_current = new ColorCG(colors[0], colors[1], colors[2]);
                 return color_current;
@@ -78,9 +78,9 @@ public class Torus extends PrimitiveObject {
     public Vector4 getNormalAt(Vector4 point) {
         float paramSquared = this.sweptRadius * this.sweptRadius + this.tubeRadius * this.tubeRadius;
 
-        float x = point.GetX();
-        float y = point.GetY();
-        float z = point.GetZ();
+        float x = point.getX();
+        float y = point.getY();
+        float z = point.getZ();
         float sumSquared = x * x + y * y + z * z;
 
         Vector4 tmp = new Vector4(
@@ -88,18 +88,18 @@ public class Torus extends PrimitiveObject {
                 4.0f * y * (sumSquared - paramSquared + 2.0f * this.sweptRadius * this.sweptRadius),
                 4.0f * z * (sumSquared - paramSquared));
 
-        return tmp.Normalized();
+        return tmp.normalized();
     }
 
     @Override
     public float findIntersection(Ray ray) {
-        float ox = ray.origin.GetX();
-        float oy = ray.origin.GetY();
-        float oz = ray.origin.GetZ();
+        float ox = ray.origin.getX();
+        float oy = ray.origin.getY();
+        float oz = ray.origin.getZ();
 
-        float dx = ray.direction.GetX();
-        float dy = ray.direction.GetY();
-        float dz = ray.direction.GetZ();
+        float dx = ray.direction.getX();
+        float dy = ray.direction.getY();
+        float dz = ray.direction.getZ();
 
         float sum_d_sqrd = dx * dx + dy * dy + dz * dz;
         float e = ox * ox + oy * oy + oz * oz -
