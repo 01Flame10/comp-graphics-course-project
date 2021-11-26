@@ -1,5 +1,8 @@
 package com.bmstu.cg;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class Matrix {
     private float[][] matrix;
 
@@ -221,5 +224,12 @@ public class Matrix {
         return res;
     }
 
-
+    @Override
+    public String toString() {
+        return "Matrix{" +
+                "matrix=\n" + Arrays.stream(matrix)
+                .map(a -> "x: " + a[0] + "\ty: " + a[1] + "\tz: " + a[2] + "\tw: " + a[3])
+                .collect(Collectors.joining("\n"))+
+                '}';
+    }
 }

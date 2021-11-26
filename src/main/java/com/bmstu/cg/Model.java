@@ -4,21 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Model {
-    private List<Vector4> positions;
-    private List<Vector4> texCoords;
-    private List<Vector4> normals;
-    private List<Vector4> tangents;
-    private List<Integer> indices;
+    private final List<Vector4> positions;
+    private final List<Vector4> texCoords;
+    private final List<Vector4> normals;
+    private final List<Vector4> tangents;
+    private final List<Integer> indices;
 
     public Model() {
-        positions = new ArrayList<Vector4>();
-        texCoords = new ArrayList<Vector4>();
-        normals = new ArrayList<Vector4>();
-        tangents = new ArrayList<Vector4>();
-        indices = new ArrayList<Integer>();
+        positions = new ArrayList<>();
+        texCoords = new ArrayList<>();
+        normals = new ArrayList<>();
+        tangents = new ArrayList<>();
+        indices = new ArrayList<>();
     }
 
-    public void CalcNormals() {
+    public void calculateNormals() {
         for (int i = 0; i < indices.size(); i += 3) {
             int i0 = indices.get(i);
             int i1 = indices.get(i + 1);
@@ -38,7 +38,7 @@ public class Model {
             normals.set(i, normals.get(i).normalized());
     }
 
-    public void CalcTangents() {
+    public void calculateTangents() {
         for (int i = 0; i < indices.size(); i += 3) {
             int i0 = indices.get(i);
             int i1 = indices.get(i + 1);

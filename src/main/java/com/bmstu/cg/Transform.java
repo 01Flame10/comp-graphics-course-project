@@ -1,5 +1,8 @@
 package com.bmstu.cg;
 
+import lombok.Getter;
+
+@Getter
 public class Transform {
     private final Vector4 position;
     private final Quaternion rotation;
@@ -21,28 +24,19 @@ public class Transform {
         this.eulerRotation = eulerRotation;
     }
 
+    public Transform(Transform transform) {
+        this.position = new Vector4(transform.getPosition());
+        this.rotation = new Quaternion(transform.getRotation());
+        this.scale = new Vector4(transform.getScale());
+        this.eulerRotation = new Vector4(transform.getEulerRotation());
+    }
+
     public Vector4 getTransformedPos() {
         return position;
     }
 
     public Quaternion getTransformedRot() {
         return rotation;
-    }
-
-    public Vector4 getPos() {
-        return position;
-    }
-
-    public Quaternion getRot() {
-        return rotation;
-    }
-
-    public Vector4 getEulerRot() {
-        return eulerRotation;
-    }
-
-    public Vector4 getScale() {
-        return scale;
     }
 
     public Transform setPos(Vector4 pos) {

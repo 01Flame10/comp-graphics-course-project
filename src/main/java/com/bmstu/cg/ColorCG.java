@@ -1,7 +1,14 @@
 package com.bmstu.cg;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+@Getter
+@Setter
+@Accessors(chain = true)
 public class ColorCG {
-    public float red, green, blue, specular, special, refr_koef, opacity;
+    public float red, green, blue, specular, special, reflectionCoefficient, opacity;
 
     public ColorCG() {
         red = 0.5f;
@@ -9,7 +16,7 @@ public class ColorCG {
         blue = 0.5f;
         specular = 0;
         special = 0;
-        refr_koef = 0;
+        reflectionCoefficient = 0;
         opacity = 0;
     }
 
@@ -20,8 +27,18 @@ public class ColorCG {
         blue = b;
         specular = 0;
         special = 0;
-        refr_koef = 0;
+        reflectionCoefficient = 0;
         opacity = 0;
+    }
+
+    public ColorCG(float r, float g, float b, float opacity) {
+        red = r;
+        green = g;
+        blue = b;
+        specular = 0;
+        special = 0;
+        reflectionCoefficient = 0;
+        this.opacity = opacity;
     }
 
     public ColorCG(float r, float g, float b, float specular_v, float s, float refr, float opacity_v) {
@@ -30,69 +47,23 @@ public class ColorCG {
         blue = b;
         specular = specular_v;
         special = s;
-        refr_koef = refr;
+        reflectionCoefficient = refr;
         opacity = opacity_v;
     }
 
-
-    public float getColorRed() {
-        return red;
+    public ColorCG colorMul(float scalar) {
+        return new ColorCG(red * scalar, green * scalar, blue * scalar, specular, special, this.reflectionCoefficient, this.opacity);
     }
 
-    public float getColorGreen() {
-        return green;
+    public ColorCG colorAdd(ColorCG color) {
+        return new ColorCG(red + color.getRed(), green + color.getGreen(), blue + color.getBlue(), specular, special, this.reflectionCoefficient, this.opacity);
     }
 
-    public float getColorBlue() {
-        return blue;
+    public ColorCG colorMul(ColorCG color) {
+        return new ColorCG(red * color.getRed(), green * color.getGreen(), blue * color.getBlue(), specular, special, this.reflectionCoefficient, this.opacity);
     }
 
-    public float getColorSpecial() {
-        return special;
-    }
-
-    public float getColorRefr() {
-        return refr_koef;
-    }
-
-    public float setColorRed(float redValue) {
-        red = redValue;
-        return 0;
-    }
-
-    public float setColorGreen(float greenValue) {
-        green = greenValue;
-        return 0;
-    }
-
-    public float setColorBlue(float blueValue) {
-        blue = blueValue;
-        return 0;
-    }
-
-    public float setColorSpecial(float specialValue) {
-        special = specialValue;
-        return 0;
-    }
-
-    public float setColorRefr(float specialValue) {
-        refr_koef = specialValue;
-        return 0;
-    }
-
-    public ColorCG ColorMul(float scalar) {
-        return new ColorCG(red * scalar, green * scalar, blue * scalar, specular, special, this.refr_koef, this.opacity);
-    }
-
-    public ColorCG ColorAdd(ColorCG color) {
-        return new ColorCG(red + color.getColorRed(), green + color.getColorGreen(), blue + color.getColorBlue(), specular, special, this.refr_koef, this.opacity);
-    }
-
-    public ColorCG ColorMul(ColorCG color) {
-        return new ColorCG(red * color.getColorRed(), green * color.getColorGreen(), blue * color.getColorBlue(), specular, special, this.refr_koef, this.opacity);
-    }
-
-    public ColorCG Limit() {
+    public ColorCG limit() {
         float alllight = red + green + blue;
         float excesslight = alllight - 3;
         if (excesslight > 0) {
@@ -119,6 +90,6 @@ public class ColorCG {
             blue = 0;
         }
 
-        return new ColorCG(red, green, blue, specular, special, this.refr_koef, this.opacity);
+        return new ColorCG(red, green, blue, specular, special, this.reflectionCoefficient, this.opacity);
     }
 }

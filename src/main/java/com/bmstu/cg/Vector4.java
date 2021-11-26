@@ -1,9 +1,14 @@
 package com.bmstu.cg;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+@Data
+@Accessors(chain = true)
 public class Vector4 {
-    private final float x;
-    private final float y;
-    private final float w;
+    private float x;
+    private float y;
+    private float w;
     private float z;
 
     public Vector4(float x, float y, float z, float w) {
@@ -17,20 +22,8 @@ public class Vector4 {
         this(x, y, z, 1.0f);
     }
 
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public float getZ() {
-        return z;
-    }
-
-    public float getW() {
-        return w;
+    public Vector4(Vector4 vector) {
+        this(vector.x, vector.y, vector.z, vector.w);
     }
 
     public float length() {
@@ -83,7 +76,7 @@ public class Vector4 {
     }
 
     public Vector4 add(float r) {
-        return new Vector4(x + r, y + r, z + r, w + r);
+        return new Vector4(x + r, y + r, z + r, w);
     }
 
     public Vector4 substitute(Vector4 r) {
@@ -111,4 +104,13 @@ public class Vector4 {
         return (float) Math.sqrt((x * x) + (y * y) + (z * z));
     }
 
+    @Override
+    public String toString() {
+        return "Vector4{" +
+                "x=" + x +
+                ",y=" + y +
+                ",z=" + z +
+                ",w=" + w +
+                '}';
+    }
 }

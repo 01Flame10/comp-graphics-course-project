@@ -1,5 +1,8 @@
 package com.bmstu.cg;
 
+import com.bmstu.cg.exception.RenderChosenObjectException;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,15 +15,14 @@ public class RenderSceneTriangle extends ImageCG {
         zBuffer = new float[width * height];
     }
 
-    public void NewZBuffer() {
-        for (int i = 0; i < zBuffer.length; i++) {
-            zBuffer[i] = Float.MAX_VALUE;
-        }
+    public void newZBuffer() {
+        Arrays.fill(zBuffer, Float.MAX_VALUE);
     }
 
-    public void DrawTriangle(Vertex v1, Vertex v2, Vertex v3, ImageCG texture, ColorCG color, boolean tex_paint, List<Source> light_array) {
-        if (v1.IsInsideView() && v2.IsInsideView() && v3.IsInsideView()) {
-            FillTriangle(v1, v2, v3, texture, color, tex_paint, light_array);
+    public void drawTriangle(Vertex v1, Vertex v2, Vertex v3, ImageCG texture, ColorCG color,
+                             boolean texPaint, List<Source> lightsArray, boolean isPhantom) {
+        if (v1.isInsideView() && v2.isInsideView() && v3.isInsideView()) {
+            fillTriangle(v1, v2, v3, texture, color, texPaint, lightsArray, isPhantom);
             return;
         }
 
@@ -31,41 +33,40 @@ public class RenderSceneTriangle extends ImageCG {
         vertices.add(v2);
         vertices.add(v3);
 
-        if (ClipPolygon(vertices, additionalList, 0) &&
-                ClipPolygon(vertices, additionalList, 1) &&
-                ClipPolygon(vertices, additionalList, 2)) {
+        if (clipPolygon(vertices, additionalList, 0) &&
+                clipPolygon(vertices, additionalList, 1) &&
+                clipPolygon(vertices, additionalList, 2)) {
             Vertex initialVertex = vertices.get(0);
 
             for (int i = 1; i < vertices.size() - 1; i++) {
-                FillTriangle(initialVertex, vertices.get(i), vertices.get(i + 1), texture, color, tex_paint, light_array);
+                fillTriangle(initialVertex, vertices.get(i), vertices.get(i + 1),
+                        texture, color, texPaint, lightsArray, isPhantom);
             }
         }
     }
 
-    private boolean ClipPolygon(List<Vertex> vertices, List<Vertex> addList,
+    private boolean clipPolygon(List<Vertex> vertices, List<Vertex> addList,
                                 int componentIndex) {
-        ClipPolygonComponent(vertices, componentIndex, 1.0f, addList);
+        clipPolygonComponent(vertices, componentIndex, 1.0f, addList);
         vertices.clear();
 
         if (addList.isEmpty()) {
             return false;
         }
 
-        ClipPolygonComponent(addList, componentIndex, -1.0f, vertices);
+        clipPolygonComponent(addList, componentIndex, -1.0f, vertices);
         addList.clear();
 
         return !vertices.isEmpty();
     }
 
-    private void ClipPolygonComponent(List<Vertex> vertices, int componentIndex,
+    private void clipPolygonComponent(List<Vertex> vertices, int componentIndex,
                                       float componentFactor, List<Vertex> result) {
         Vertex previousVertex = vertices.get(vertices.size() - 1);
         float previousComponent = previousVertex.get(componentIndex) * componentFactor;
         boolean previousInside = previousComponent <= previousVertex.getPosition().getW();
 
-        Iterator<Vertex> it = vertices.iterator();
-        while (it.hasNext()) {
-            Vertex currentVertex = it.next();
+        for (Vertex currentVertex : vertices) {
             float currentComponent = currentVertex.get(componentIndex) * componentFactor;
             boolean currentInside = currentComponent <= currentVertex.getPosition().getW();
 
@@ -74,7 +75,7 @@ public class RenderSceneTriangle extends ImageCG {
                         ((previousVertex.getPosition().getW() - previousComponent) -
                                 (currentVertex.getPosition().getW() - currentComponent));
 
-                result.add(previousVertex.Lerp(currentVertex, lerpAmt));
+                result.add(previousVertex.lerp(currentVertex, lerpAmt));
             }
 
             if (currentInside) {
@@ -87,15 +88,17 @@ public class RenderSceneTriangle extends ImageCG {
         }
     }
 
-    private void FillTriangle(Vertex v1, Vertex v2, Vertex v3, ImageCG texture, ColorCG color, boolean tex_paint, List<Source> light_array) {
+    private void fillTriangle(Vertex v1, Vertex v2, Vertex v3, ImageCG texture, ColorCG color,
+                              boolean texPaint, List<Source> lightsArray, boolean isPhantom) {
         Matrix screenSpaceTransform =
-                new Matrix().createScreenSpace(getWidth() / 2, getHeight() / 2);
+                new Matrix().createScreenSpace(getWidth() >> 1, getHeight() >> 1);
         Matrix identity = new Matrix().createIdentity();
-        Vertex minYVert = v1.Transform(screenSpaceTransform, identity).PerspectiveDivide();
-        Vertex midYVert = v2.Transform(screenSpaceTransform, identity).PerspectiveDivide();
-        Vertex maxYVert = v3.Transform(screenSpaceTransform, identity).PerspectiveDivide();
+        Vertex minYVert = v1.transform(screenSpaceTransform, identity).perspectiveDivide();
+        Vertex midYVert = v2.transform(screenSpaceTransform, identity).perspectiveDivide();
+        Vertex maxYVert = v3.transform(screenSpaceTransform, identity).perspectiveDivide();
+//        System.out.println("xMin: " + minYVert.getX() + " xMax: " + maxYVert.getX() + " yStart: " + minYVert.getY() + "yEnd: " + maxYVert.getY());
 
-        if (minYVert.TriangleAreaTimesTwo(maxYVert, midYVert) >= 0) {
+        if (minYVert.triangleAreaTimesTwo(maxYVert, midYVert) >= 0) {
             return;
         }
 
@@ -117,23 +120,26 @@ public class RenderSceneTriangle extends ImageCG {
             midYVert = temp;
         }
 
-        ScanTriangle(minYVert, midYVert, maxYVert,
-                minYVert.TriangleAreaTimesTwo(maxYVert, midYVert) >= 0,
-                texture, color, tex_paint, light_array);
+        scanTriangle(minYVert, midYVert, maxYVert,
+                minYVert.triangleAreaTimesTwo(maxYVert, midYVert) >= 0,
+                texture, color, texPaint, lightsArray, isPhantom);
     }
 
-    private void ScanTriangle(Vertex minYVert, Vertex midYVert,
-                              Vertex maxYVert, boolean handedness, ImageCG texture, ColorCG color, boolean tex_paint, List<Source> light_array) {
-        Interpolation gradients = new Interpolation(minYVert, midYVert, maxYVert, light_array.get(0).getLightPosition());
+    private void scanTriangle(Vertex minYVert, Vertex midYVert,
+                              Vertex maxYVert, boolean handedness, 
+                              ImageCG texture, ColorCG color, boolean texPaint, 
+                              List<Source> lightsArray, boolean isPhantom) {
+        Interpolation gradients = new Interpolation(minYVert, midYVert, maxYVert, lightsArray.get(0).getLightPosition());
         Edge topToBottom = new Edge(gradients, minYVert, maxYVert, 0);
         Edge topToMiddle = new Edge(gradients, minYVert, midYVert, 0);
         Edge middleToBottom = new Edge(gradients, midYVert, maxYVert, 1);
 
-        ScanEdges(gradients, topToBottom, topToMiddle, handedness, texture, color, tex_paint);
-        ScanEdges(gradients, topToBottom, middleToBottom, handedness, texture, color, tex_paint);
+        scanEdges(gradients, topToBottom, topToMiddle, handedness, texture, color, texPaint, isPhantom);
+        scanEdges(gradients, topToBottom, middleToBottom, handedness, texture, color, texPaint, isPhantom);
     }
 
-    private void ScanEdges(Interpolation gradients, Edge a, Edge b, boolean handedness, ImageCG texture, ColorCG color, boolean tex_paint) {
+    private void scanEdges(Interpolation gradients, Edge a, Edge b, 
+                           boolean handedness, ImageCG texture, ColorCG color, boolean texPaint, boolean isPhantom) {
         Edge left = a;
         Edge right = b;
         if (handedness) {
@@ -144,14 +150,16 @@ public class RenderSceneTriangle extends ImageCG {
 
         int yStart = b.getYStart();
         int yEnd = b.getYEnd();
+
         for (int j = yStart; j < yEnd; j++) {
-            DrawLine(gradients, left, right, j, texture, color, tex_paint);
-            left.Step();
-            right.Step();
+            drawLine(gradients, left, right, j, texture, color, texPaint, isPhantom);
+            left.step();
+            right.step();
         }
     }
 
-    private void DrawLine(Interpolation gradients, Edge left, Edge right, int j, ImageCG texture, ColorCG color, boolean tex_paint) {
+    private void drawLine(Interpolation gradients, Edge left, Edge right, 
+                          int j, ImageCG texture, ColorCG color, boolean texPaint, boolean isPhantom) {
         int xMin = (int) Math.ceil(left.getX());
         int xMax = (int) Math.ceil(right.getX());
         float xDopStep = xMin - left.getX();
@@ -166,17 +174,21 @@ public class RenderSceneTriangle extends ImageCG {
         float oneOnZ = left.getOneOverZ() + oneOverZXStep * xDopStep;
         float depth = left.getDepth() + depthXStep * xDopStep;
         float lightAmt = left.getLightAmt() + lightAmtXStep * xDopStep;
+        boolean isColumnPhantom = Launcher.mouseY == j && Launcher.phantomChooseMode && isPhantom;
         for (int i = xMin; i < xMax; i++) {
+            if (Launcher.mouseX == i && isColumnPhantom) {
+                throw new RenderChosenObjectException();
+            }
             int index = i + j * getWidth();
             if (depth < zBuffer[index]) {
                 zBuffer[index] = depth;
-                if (tex_paint) {
+                if (texPaint) {
                     float z = 1.0f / oneOnZ;
                     int srcX = (int) ((texCoordX * z) * (float) (texture.getWidth() - 1) + 0.5f);
                     int srcY = (int) ((texCoordY * z) * (float) (texture.getHeight() - 1) + 0.5f);
-                    CopyPixel(i, j, srcX, srcY, texture, lightAmt);
+                    copyPixel(i, j, srcX, srcY, texture, lightAmt);
                 } else {
-                    DrawPixelLight(i, j, (byte) 0xFF,
+                    drawPixelLight(i, j, (byte) 0xFF,
                             (byte) ((int) (color.blue * 255) & 0xFF),
                             (byte) ((int) (color.green * 255) & 0xFF),
                             (byte) ((int) (color.red * 255) & 0xFF),

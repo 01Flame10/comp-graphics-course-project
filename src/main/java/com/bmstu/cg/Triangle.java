@@ -86,7 +86,7 @@ public class Triangle extends PrimitiveObject {
             if (i1 >= 0 && j1 >= 0 &&
                     i1 < texture.getWidth() &&
                     j1 < texture.getHeight()) {
-                float[] colors = texture.get_pixel_color(i1, j1);
+                float[] colors = texture.getPixelColor(i1, j1);
                 ColorCG color_current = new ColorCG(colors[0], colors[1], colors[2], texture.specular, texture.refl, texture.refr, texture.opacity);
                 return color_current;
             }

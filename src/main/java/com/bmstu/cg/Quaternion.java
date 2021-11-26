@@ -53,6 +53,13 @@ public class Quaternion {
         this.wq = w;
     }
 
+    public Quaternion(Quaternion quaternion) {
+        this.wq = quaternion.wq;
+        this.yq = quaternion.yq;
+        this.zq = quaternion.zq;
+        this.xq = quaternion.xq;
+    }
+
     public Quaternion(Vector4 axis, float angle) {
         float sinHalfAngle = (float) Math.sin(angle / 2);
         float cosHalfAngle = (float) Math.cos(angle / 2);

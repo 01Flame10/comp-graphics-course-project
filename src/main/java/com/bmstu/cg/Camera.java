@@ -7,15 +7,15 @@ public class Camera {
 
     private Transform transform;
     private Matrix projection;
-    private Vector4 CameraRight;
-    private Vector4 CameraDown;
+    private Vector4 cameraRight;
+    private Vector4 cameraDown;
 
 
     public Camera(Matrix projection) {
         this.projection = projection;
         this.transform = new Transform();
-        this.CameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
-        this.CameraDown = this.CameraRight.cross(getCameraDirection()).normalized();
+        this.cameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
+        this.cameraDown = this.cameraRight.cross(getCameraDirection()).normalized();
     }
 
     public Vector4 getCameraPosition() {
@@ -23,15 +23,15 @@ public class Camera {
     }
 
     public Vector4 getCameraDirection() {
-        return transform.getRot().getForward();
+        return transform.getRotation().getForward();
     }
 
     public Vector4 getCameraRight() {
-        return CameraRight;
+        return cameraRight;
     }
 
     public Vector4 getCameraDown() {
-        return CameraDown;
+        return cameraDown;
     }
 
 
@@ -49,21 +49,25 @@ public class Camera {
         final float sensitivityX = (float) (1.66f * delta);
         final float sensitivityY = (float) (1.0f * delta);
         final float movAmt = (float) (5.0f * delta);
-        System.out.println("MOV " + movAmt);
         if (action != null) {
-            System.out.println("ACTION " + action.getKeyCode());
             switch (action.getKeyCode()) {
                 case KeyEvent.VK_W:
-                    move(transform.getRot().getForward(), movAmt);
+                    move(transform.getRotation().getForward(), movAmt);
                     break;
                 case KeyEvent.VK_S:
-                    move(transform.getRot().getForward(), -movAmt);
+                    move(transform.getRotation().getForward(), -movAmt);
+                    break;
+                case KeyEvent.VK_SPACE:
+                    move(transform.getRotation().getUp(), movAmt);
+                    break;
+                case KeyEvent.VK_CONTROL:
+                    move(transform.getRotation().getDown(), movAmt);
                     break;
                 case KeyEvent.VK_A:
-                    move(transform.getRot().getLeft(), movAmt);
+                    move(transform.getRotation().getLeft(), movAmt);
                     break;
                 case KeyEvent.VK_D:
-                    move(transform.getRot().getRight(), movAmt);
+                    move(transform.getRotation().getRight(), movAmt);
                     break;
 
                 case KeyEvent.VK_RIGHT:
@@ -73,10 +77,10 @@ public class Camera {
                     rotate(Y_AXIS, -sensitivityX);
                     break;
                 case KeyEvent.VK_DOWN:
-                    rotate(transform.getRot().getRight(), sensitivityY);
+                    rotate(transform.getRotation().getRight(), sensitivityY);
                     break;
                 case KeyEvent.VK_UP:
-                    rotate(transform.getRot().getRight(), -sensitivityY);
+                    rotate(transform.getRotation().getRight(), -sensitivityY);
                     break;
             }
         }
@@ -85,14 +89,14 @@ public class Camera {
 
 
     public void move(Vector4 dir, float amt) {
-        transform = transform.setPos(transform.getPos().add(dir.multiply(amt)));
-        this.CameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
-        this.CameraDown = this.CameraRight.cross(getCameraDirection());
+        transform = transform.setPos(transform.getPosition().add(dir.multiply(amt)));
+        this.cameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
+        this.cameraDown = this.cameraRight.cross(getCameraDirection());
     }
 
     public void rotate(Vector4 axis, float angle) {
         transform = transform.rotate(new Quaternion(axis, angle));
-        this.CameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
-        this.CameraDown = this.CameraRight.cross(getCameraDirection());
+        this.cameraRight = Y_AXIS.cross(getCameraDirection()).normalized();
+        this.cameraDown = this.cameraRight.cross(getCameraDirection());
     }
 }

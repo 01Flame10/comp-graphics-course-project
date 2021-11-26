@@ -1,19 +1,19 @@
 package com.bmstu.cg;
 
+import com.bmstu.cg.enums.StandardObjects;
+import com.bmstu.cg.exception.RenderChosenObjectException;
+import lombok.SneakyThrows;
+
 import java.awt.Canvas;
 import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.DataBufferByte;
 import java.awt.GridLayout;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.Insets;
 import java.awt.Dimension;
 import javax.swing.*;
@@ -21,6 +21,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,7 +55,7 @@ public class Launcher extends Canvas {
     private JComboBox comboBox;
     private DefaultTableModel tableModel;
     private ImageJPanel imageTexture;
-    private JButton AddTexButton;
+    private JButton addTexButton;
     private JButton addСolButton;
     private JButton addСolLightButton;
     private ImageCG curTexture;
@@ -71,6 +72,16 @@ public class Launcher extends Canvas {
     private int height;
 
     private KeyEvent lastEvent;
+    private boolean isObjectPlacementActive = false;
+    private int mouseMoveEventFlushSize = 25;
+    private int mouseMoveEventCounter = 25;
+
+    /**
+     * @see RenderSceneTriangle@drawLine
+     */
+    public static int mouseX;
+    public static int mouseY;
+    public static boolean phantomChooseMode = false;
 
     private final String resourcePath = "/home/flame/Documents/comp-graphics-course-project/src/main/resources/";
 
@@ -92,19 +103,17 @@ public class Launcher extends Canvas {
         mFrameBuffer = new RenderSceneTriangle(width, height);
         target = mFrameBuffer;
         mDisplayImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        mDisplayComponents =
-                ((DataBufferByte) mDisplayImage.getRaster().getDataBuffer()).getData();
+        mDisplayComponents = ((DataBufferByte) mDisplayImage.getRaster().getDataBuffer()).getData();
 
-        mFrameBuffer.Clear((byte) 0x80);
-        mFrameBuffer.DrawPixel(100, 100, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xFF);
+        mFrameBuffer.clear((byte) 0x80);
+        mFrameBuffer.drawPixel(100, 100, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xFF);
 
         mFrame = new JFrame();
         mFrame.setLayout(null);
         mFrame.add(this);
-        this.addKeyListener(new KeyListener(){
+        this.addKeyListener(new KeyListener() {
             @Override
             public void keyPressed(KeyEvent e) {
-                System.out.println("keyPressed " + e.getKeyChar() + " | " + e.getKeyCode());
                 lastEvent = e;
                 update();
             }
@@ -117,25 +126,80 @@ public class Launcher extends Canvas {
             public void keyReleased(KeyEvent e) {
             }
         });
+        this.addMouseListener(new MouseAdapter() {
+            @SneakyThrows
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                System.out.println("mouseClicked point:" + e.getPoint() + " screen: " + e.getLocationOnScreen());
+//                complexObjectList.get(0).getVertexes().forEach(v -> System.out.println("POS " + v.getPosition()));
+//                complexObjectList.get(0).getVertexes().forEach(v -> v.setPosition(v.getPosition().add(2.5f)));
+//                complexObjectList.get(0).getVertexes().forEach(v -> System.out.println("POS2 " + v.getPosition()));
+//                complexObjectList.forEach(o -> System.out.println("object " + o.getVertexes().stream()
+//                        .map(Vertex::getPosition)
+//                        .reduce(new Vector4(0, 0, 0),
+//                                Vector4::add)));
+                phantomChooseMode = !phantomChooseMode;
+                System.out.println("PHANTOM MODE SET " + phantomChooseMode);
+                if (phantomChooseMode) {
+                    ComplexObject phantomReference = new ComplexObject(resourcePath + StandardObjects.CUBE.getObjectFileName(), new Transform(new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1)), StandardObjects.CUBE.getDisplayName(), new ColorCG(1.0f, 1.0f, 1.0f));
+                    complexObjectList.addAll(complexObjectList.get(0).createAvailablePhantoms(phantomReference));
+
+                } else {
+                    System.out.println("DELETING");
+                    complexObjectList.removeIf(o -> {
+                        if (o.isPhantom()) {
+                            o.getParent().getConnections().remove(o.getParentConnectionType());
+                            return true;
+                        }
+                        return false;
+                    });
+//                    complexObjectList.get(0).getConnections().clear(); // TODO change
+//                    complexObjectList.removeIf(ComplexObject::isPhantom);
+                }
+                mouseX = e.getX();
+                mouseY = e.getY();
+//                mDisplayImage.setRGB(e.getX(),e.getY(), 255);
+//                mDisplayImage.setRGB(e.getX(),e.getY() + 1, 255);
+//                mDisplayImage.setRGB(e.getX() + 1,e.getY(), 255);
+//                mDisplayImage.setRGB(e.getX() + 1,e.getY() + 1, 255);
+//                mFrameBuffer.getMComponents()
+//                super.mouseClicked(e);
+                update();
+            }
+        });
+//        this.addMouseMotionListener(new MouseMotionListener() {
+//            @Override
+//            public void mouseDragged(MouseEvent mouseEvent) {
+//                System.out.println("mouseDragged " + mouseEvent.getLocationOnScreen());
+//
+//            }
+//
+//            @Override
+//            public void mouseMoved(MouseEvent mouseEvent) {
+////                System.out.println("mouseMoved " + mouseEvent.getLocationOnScreen());
+//                isObjectPlacementActive = true;
+////                delayedUpdate();
+//            }
+//        });
         mFrame.setVisible(true);
 
         JPanel panel = new JPanel(new GridLayout(1, 1));
         System.out.println("BOUNDS" + panel.getBounds().height + " - " + panel.getBounds().width + " | " + this.getWidth() + " - " + this.getHeight());
 
         panel.add(this);
-        JButton RenderButton = new JButton("Рендер");
-        RenderButton.addActionListener(new RenderRayTracingListener());
-        JButton AddButton = new JButton("Добавить");
-        AddButton.addActionListener(new AddObjectListener());
-        JButton LoadButton = new JButton("Загрузить");
-        JButton AddLightButton = new JButton("Добавить");
-        JButton DeleteButton = new JButton("Удалить");
-        DeleteButton.addActionListener(new DeleteObjectListener());
+        JButton renderButton = new JButton("Рендер");
+        renderButton.addActionListener(new RenderRayTracingListener());
+        JButton addButton = new JButton("Добавить");
+        addButton.addActionListener(new AddObjectListener());
+        JButton loadButton = new JButton("Загрузить");
+        JButton addLightButton = new JButton("Добавить");
+        JButton deleteButton = new JButton("Удалить");
+        deleteButton.addActionListener(new DeleteObjectListener());
 
         ////---------------/////
         //,
         //"Тор"
-        String[] items_objects = {
+        String[] itemsObjects = {
                 "Куб",
                 "Сфера",
                 "Цилиндр",
@@ -144,11 +208,11 @@ public class Launcher extends Canvas {
                 "Плоскость"//,
                 //"Тор"
         };
-        comboBox = new JComboBox(items_objects);
-        String[] items_light = {
+        comboBox = new JComboBox(itemsObjects);
+        String[] itemsLight = {
                 "Точечный источник"
         };
-        JComboBox LightСomboBox = new JComboBox(items_light);
+        JComboBox lightсombobox = new JComboBox(itemsLight);
 
         String[] data1 = {"Куб1", "Пирамида1", "Конус2", "Сфера1"};
         JList<String> object_list = new JList<String>(data1);
@@ -159,7 +223,7 @@ public class Launcher extends Canvas {
         objectListPanel = new JTable(tableModel);
         JScrollPane scr = new JScrollPane(objectListPanel);
         // Панель настроек объекта
-        AddTexButton = new JButton("Добавить");
+        addTexButton = new JButton("Добавить");
         addСolButton = new JButton();
         addСolLightButton = new JButton();
         JLabel LabelObjectList = new JLabel("Список объектов:");
@@ -182,10 +246,10 @@ public class Launcher extends Canvas {
         JLabel LabelColorLight = new JLabel("Цвет:");
 
 
-        JLabel LabelRefl = new JLabel("Отражение:");
-        JLabel LabelRefr = new JLabel("Преломление:");
-        JLabel LabelOpacity = new JLabel("Прозрачность:");
-        JLabel LabelSpecular = new JLabel("Блеск:");
+        JLabel labelRefl = new JLabel("Отражение:");
+        JLabel labelRefr = new JLabel("Преломление:");
+        JLabel labelOpacity = new JLabel("Прозрачность:");
+        JLabel labelSpecular = new JLabel("Блеск:");
         JLabel LabelAmbient = new JLabel("Окружающий свет:");
 
         SpinnerNumberModel modeltrans1 = new SpinnerNumberModel(0.0, -100.0, 100.0, 0.1);
@@ -248,7 +312,7 @@ public class Launcher extends Canvas {
                     System.out.println("objects.get(j).type == \"Точечный источник\"");
                     if ("Точечный источник".equals(complexObjectList.get(j).type)) k++;
                 }
-                lightSources.get(k).setLightPosition(complexObjectList.get(i).trans.getPos());
+                lightSources.get(k).setLightPosition(complexObjectList.get(i).trans.getPosition());
                 lightSources.get(k).setLightIntensive(Float.parseFloat(spinIntenceLight.getValue().toString()));
             }
             if (js == spinXtrans || js == spinYtrans || js == spinZtrans) {
@@ -265,7 +329,7 @@ public class Launcher extends Canvas {
                         new Vector4(Float.parseFloat(spinXscale.getValue().toString()), Float.parseFloat(spinYscale.getValue().toString()), Float.parseFloat(spinZscale.getValue().toString())));
             }
             if (js == spinRefl || js == spinRefr || js == spinOpacity || js == spinSpecular) {
-                if (complexObjectList.get(i).tex_paint) {
+                if (complexObjectList.get(i).texPaint) {
                     complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
                     complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
                     complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
@@ -274,7 +338,7 @@ public class Launcher extends Canvas {
                 } else {
                     complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
                     complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
-                    complexObjectList.get(i).color.refr_koef = Float.parseFloat(spinRefr.getValue().toString());
+                    complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
                     complexObjectList.get(i).color.specular = Float.parseFloat(spinSpecular.getValue().toString());
                 }
             }
@@ -304,75 +368,75 @@ public class Launcher extends Canvas {
         spinOpacity.addChangeListener(listener);
         spinSpecular.addChangeListener(listener);
 
-        JPanel panel_property = new JPanel(null);
-        panel_property.add(spinXtrans);
-        panel_property.add(spinYtrans);
-        panel_property.add(spinZtrans);
+        JPanel panelProperty = new JPanel(null);
+        panelProperty.add(spinXtrans);
+        panelProperty.add(spinYtrans);
+        panelProperty.add(spinZtrans);
 
-        panel_property.add(spinXrot);
-        panel_property.add(spinYrot);
-        panel_property.add(spinZrot);
+        panelProperty.add(spinXrot);
+        panelProperty.add(spinYrot);
+        panelProperty.add(spinZrot);
 
 
-        panel_property.add(spinRefl);
-        panel_property.add(spinRefr);
-        panel_property.add(spinOpacity);
-        panel_property.add(spinSpecular);
+        panelProperty.add(spinRefl);
+        panelProperty.add(spinRefr);
+        panelProperty.add(spinOpacity);
+        panelProperty.add(spinSpecular);
 
-        panel_property.add(spinXscale);
-        panel_property.add(spinYscale);
-        panel_property.add(spinZscale);
+        panelProperty.add(spinXscale);
+        panelProperty.add(spinYscale);
+        panelProperty.add(spinZscale);
 
-        panel_property.add(LabelTrans);
-        panel_property.add(LabelRot);
-        panel_property.add(LabelScale);
+        panelProperty.add(LabelTrans);
+        panelProperty.add(LabelRot);
+        panelProperty.add(LabelScale);
 
-        panel_property.add(LabelX);
-        panel_property.add(LabelY);
-        panel_property.add(LabelZ);
+        panelProperty.add(LabelX);
+        panelProperty.add(LabelY);
+        panelProperty.add(LabelZ);
 
-        panel_property.add(LabelRefl);
-        panel_property.add(LabelRefr);
-        panel_property.add(LabelOpacity);
-        panel_property.add(LabelSpecular);
-        panel_property.add(addСolButton);
+        panelProperty.add(labelRefl);
+        panelProperty.add(labelRefr);
+        panelProperty.add(labelOpacity);
+        panelProperty.add(labelSpecular);
+        panelProperty.add(addСolButton);
 
-        panel_property.add(AddTexButton);
+        panelProperty.add(addTexButton);
 
-        LabelTrans.setBounds(25 + panel_property.getInsets().left, 0 + panel_property.getInsets().top,
+        LabelTrans.setBounds(25 + panelProperty.getInsets().left, 0 + panelProperty.getInsets().top,
                 80, 25);
-        LabelRot.setBounds(95 + panel_property.getInsets().left, 0 + panel_property.getInsets().top,
+        LabelRot.setBounds(95 + panelProperty.getInsets().left, 0 + panelProperty.getInsets().top,
                 80, 25);
-        LabelScale.setBounds(160 + panel_property.getInsets().left, 0 + panel_property.getInsets().top,
+        LabelScale.setBounds(160 + panelProperty.getInsets().left, 0 + panelProperty.getInsets().top,
                 80, 25);
 
 
-        LabelX.setBounds(0 + panel_property.getInsets().left, 25 + panel_property.getInsets().top,
+        LabelX.setBounds(0 + panelProperty.getInsets().left, 25 + panelProperty.getInsets().top,
                 25, 25);
-        LabelY.setBounds(0 + panel_property.getInsets().left, 50 + panel_property.getInsets().top,
+        LabelY.setBounds(0 + panelProperty.getInsets().left, 50 + panelProperty.getInsets().top,
                 25, 25);
-        LabelZ.setBounds(0 + panel_property.getInsets().left, 75 + panel_property.getInsets().top,
+        LabelZ.setBounds(0 + panelProperty.getInsets().left, 75 + panelProperty.getInsets().top,
                 25, 25);
 
-        spinXtrans.setBounds(25 + panel_property.getInsets().left, 25 + panel_property.getInsets().top,
+        spinXtrans.setBounds(25 + panelProperty.getInsets().left, 25 + panelProperty.getInsets().top,
                 60, 25);
-        spinYtrans.setBounds(25 + panel_property.getInsets().left, 50 + panel_property.getInsets().top,
+        spinYtrans.setBounds(25 + panelProperty.getInsets().left, 50 + panelProperty.getInsets().top,
                 60, 25);
-        spinZtrans.setBounds(25 + panel_property.getInsets().left, 75 + panel_property.getInsets().top,
-                60, 25);
-
-        spinXrot.setBounds(89 + panel_property.getInsets().left, 25 + panel_property.getInsets().top,
-                60, 25);
-        spinYrot.setBounds(89 + panel_property.getInsets().left, 50 + panel_property.getInsets().top,
-                60, 25);
-        spinZrot.setBounds(89 + panel_property.getInsets().left, 75 + panel_property.getInsets().top,
+        spinZtrans.setBounds(25 + panelProperty.getInsets().left, 75 + panelProperty.getInsets().top,
                 60, 25);
 
-        spinXscale.setBounds(153 + panel_property.getInsets().left, 25 + panel_property.getInsets().top,
+        spinXrot.setBounds(89 + panelProperty.getInsets().left, 25 + panelProperty.getInsets().top,
                 60, 25);
-        spinYscale.setBounds(153 + panel_property.getInsets().left, 50 + panel_property.getInsets().top,
+        spinYrot.setBounds(89 + panelProperty.getInsets().left, 50 + panelProperty.getInsets().top,
                 60, 25);
-        spinZscale.setBounds(153 + panel_property.getInsets().left, 75 + panel_property.getInsets().top,
+        spinZrot.setBounds(89 + panelProperty.getInsets().left, 75 + panelProperty.getInsets().top,
+                60, 25);
+
+        spinXscale.setBounds(153 + panelProperty.getInsets().left, 25 + panelProperty.getInsets().top,
+                60, 25);
+        spinYscale.setBounds(153 + panelProperty.getInsets().left, 50 + panelProperty.getInsets().top,
+                60, 25);
+        spinZscale.setBounds(153 + panelProperty.getInsets().left, 75 + panelProperty.getInsets().top,
                 60, 25);
 
 
@@ -381,11 +445,11 @@ public class Launcher extends Canvas {
         ButtonGroup group1 = new ButtonGroup();
         group1.add(radTexture);
         group1.add(radColor);
-        panel_property.add(radTexture);
-        panel_property.add(radColor);
-        radTexture.setBounds(0 + panel_property.getInsets().left, 110 + panel_property.getInsets().top,
+        panelProperty.add(radTexture);
+        panelProperty.add(radColor);
+        radTexture.setBounds(0 + panelProperty.getInsets().left, 110 + panelProperty.getInsets().top,
                 90, 25);
-        AddTexButton.setBounds(0 + panel_property.getInsets().left, 135 + panel_property.getInsets().top,
+        addTexButton.setBounds(0 + panelProperty.getInsets().left, 135 + panelProperty.getInsets().top,
                 90, 25);
 
         // Выбор текстуры
@@ -394,30 +458,29 @@ public class Launcher extends Canvas {
             AbstractButton aButton = (AbstractButton) actionEvent.getSource();
             System.out.println("aButton.getText() == \"Цвет:\"");
             if ("Цвет:".equals(aButton.getText())) {
-                AddTexButton.setEnabled(false);
+                addTexButton.setEnabled(false);
                 addСolButton.setEnabled(true);
                 int i = objectListPanel.getSelectedRow();
                 if (i < 0)
                     return;
 
                 //System.out.println(cur_color.getRed());
-                ColorCG new_color = new ColorCG(curColor.getRed() / 255.f, curColor.getGreen() / 255.f, curColor.getBlue() / 255.f, 0, 0, 0, 0);
-                complexObjectList.get(i).color = new_color;
-                complexObjectList.get(i).tex_paint = false;
+                complexObjectList.get(i).color = new ColorCG(curColor.getRed() / 255.f, curColor.getGreen() / 255.f, curColor.getBlue() / 255.f, 0, 0, 0, 0);
+                complexObjectList.get(i).texPaint = false;
                 complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
                 complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
-                complexObjectList.get(i).color.refr_koef = Float.parseFloat(spinRefr.getValue().toString());
+                complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
 
             }
             System.out.println("aButton.getText() == \"Текстура:\"");
             if ("Текстура:".equals(aButton.getText())) {
-                AddTexButton.setEnabled(true);
+                addTexButton.setEnabled(true);
                 addСolButton.setEnabled(false);
                 int i = objectListPanel.getSelectedRow();
                 if (i < 0)
                     return;
                 complexObjectList.get(i).texture = curTexture;
-                complexObjectList.get(i).tex_paint = true;
+                complexObjectList.get(i).texPaint = true;
                 complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
                 complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
                 complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
@@ -437,7 +500,7 @@ public class Launcher extends Canvas {
         };
         radTexture.addActionListener(sliceActionListener);
         radColor.addActionListener(sliceActionListener);
-        AddTexButton.addActionListener(e -> {
+        addTexButton.addActionListener(e -> {
             FileNameExtensionFilter filter = new FileNameExtensionFilter(
                     "pictures", "jpg", "jpeg", "png");
             JFileChooser fileopen = new JFileChooser();
@@ -469,39 +532,39 @@ public class Launcher extends Canvas {
         });
 
         imageTexture = new ImageJPanel(60, 60);
-        panel_property.add(imageTexture);
+        panelProperty.add(imageTexture);
         try {
             imageTexture.UploadImage(f);
             imageTexture.repaint();
             ImageCG texture = new ImageCG(f, 0, 0, 0, 0);
         } catch (IOException ignored) {
         }
-        imageTexture.setBounds(100 + panel_property.getInsets().left, 130 + panel_property.getInsets().top,
+        imageTexture.setBounds(100 + panelProperty.getInsets().left, 130 + panelProperty.getInsets().top,
                 60, 60);
-        radColor.setBounds(0 + panel_property.getInsets().left, 190 + panel_property.getInsets().top,
+        radColor.setBounds(0 + panelProperty.getInsets().left, 190 + panelProperty.getInsets().top,
                 60, 25);
-        addСolButton.setBounds(0 + panel_property.getInsets().left, 218 + panel_property.getInsets().top,
+        addСolButton.setBounds(0 + panelProperty.getInsets().left, 218 + panelProperty.getInsets().top,
                 90, 25);
         addСolButton.setBackground(curColor);
 
         int sub = 20;
-        spinRefl.setBounds(0 + panel_property.getInsets().left, 300 - sub + panel_property.getInsets().top,
+        spinRefl.setBounds(0 + panelProperty.getInsets().left, 300 - sub + panelProperty.getInsets().top,
                 65, 25);
-        spinRefr.setBounds(95 + panel_property.getInsets().left, 300 - sub + panel_property.getInsets().top,
+        spinRefr.setBounds(95 + panelProperty.getInsets().left, 300 - sub + panelProperty.getInsets().top,
                 65, 25);
-        spinOpacity.setBounds(0 + panel_property.getInsets().left, 350 - sub + panel_property.getInsets().top,
-                65, 25);
-
-        spinSpecular.setBounds(95 + panel_property.getInsets().left, 350 - sub + panel_property.getInsets().top,
+        spinOpacity.setBounds(0 + panelProperty.getInsets().left, 350 - sub + panelProperty.getInsets().top,
                 65, 25);
 
-        LabelRefl.setBounds(0 + panel_property.getInsets().left, 280 - sub + panel_property.getInsets().top,
+        spinSpecular.setBounds(95 + panelProperty.getInsets().left, 350 - sub + panelProperty.getInsets().top,
+                65, 25);
+
+        labelRefl.setBounds(0 + panelProperty.getInsets().left, 280 - sub + panelProperty.getInsets().top,
                 80, 25);
-        LabelRefr.setBounds(95 + panel_property.getInsets().left, 280 - sub + panel_property.getInsets().top,
+        labelRefr.setBounds(95 + panelProperty.getInsets().left, 280 - sub + panelProperty.getInsets().top,
                 85, 25);
-        LabelOpacity.setBounds(0 + panel_property.getInsets().left, 325 - sub + panel_property.getInsets().top,
+        labelOpacity.setBounds(0 + panelProperty.getInsets().left, 325 - sub + panelProperty.getInsets().top,
                 86, 25);
-        LabelSpecular.setBounds(95 + panel_property.getInsets().left, 325 - sub + panel_property.getInsets().top,
+        labelSpecular.setBounds(95 + panelProperty.getInsets().left, 325 - sub + panelProperty.getInsets().top,
                 86, 25);
 
         addСolButton.addActionListener(e -> {
@@ -515,10 +578,10 @@ public class Launcher extends Canvas {
                 return;
 
             complexObjectList.get(i).color = new ColorCG(curColor.getRed() / 255.f, curColor.getGreen() / 255.f, curColor.getBlue() / 255.f, 0, 0, 0, 0);
-            complexObjectList.get(i).tex_paint = false;
+            complexObjectList.get(i).texPaint = false;
             complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
             complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
-            complexObjectList.get(i).color.refr_koef = Float.parseFloat(spinRefr.getValue().toString());
+            complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
             complexObjectList.get(i).color.specular = Float.parseFloat(spinSpecular.getValue().toString());
             update();
         });
@@ -536,30 +599,30 @@ public class Launcher extends Canvas {
         panel_property_light.add(LabelZ2);
         panel_property_light.add(LabelIntence);
         panel_property_light.add(LabelColorLight);
-        LabelTrans2.setBounds(25 + panel_property.getInsets().left, 0 + panel_property.getInsets().top,
+        LabelTrans2.setBounds(25 + panelProperty.getInsets().left, 0 + panelProperty.getInsets().top,
                 80, 25);
 
-        LabelX2.setBounds(0 + panel_property.getInsets().left, 25 + panel_property.getInsets().top,
+        LabelX2.setBounds(0 + panelProperty.getInsets().left, 25 + panelProperty.getInsets().top,
                 25, 25);
-        LabelY2.setBounds(0 + panel_property.getInsets().left, 50 + panel_property.getInsets().top,
+        LabelY2.setBounds(0 + panelProperty.getInsets().left, 50 + panelProperty.getInsets().top,
                 25, 25);
-        LabelZ2.setBounds(0 + panel_property.getInsets().left, 75 + panel_property.getInsets().top,
+        LabelZ2.setBounds(0 + panelProperty.getInsets().left, 75 + panelProperty.getInsets().top,
                 25, 25);
-        LabelIntence.setBounds(90 + panel_property.getInsets().left, 0 + panel_property.getInsets().top,
+        LabelIntence.setBounds(90 + panelProperty.getInsets().left, 0 + panelProperty.getInsets().top,
                 100, 25);
 
-        spinXtransLight.setBounds(25 + panel_property.getInsets().left, 25 + panel_property.getInsets().top,
+        spinXtransLight.setBounds(25 + panelProperty.getInsets().left, 25 + panelProperty.getInsets().top,
                 60, 25);
-        spinYtransLight.setBounds(25 + panel_property.getInsets().left, 50 + panel_property.getInsets().top,
+        spinYtransLight.setBounds(25 + panelProperty.getInsets().left, 50 + panelProperty.getInsets().top,
                 60, 25);
-        spinZtransLight.setBounds(25 + panel_property.getInsets().left, 75 + panel_property.getInsets().top,
+        spinZtransLight.setBounds(25 + panelProperty.getInsets().left, 75 + panelProperty.getInsets().top,
                 60, 25);
-        spinIntenceLight.setBounds(90 + panel_property.getInsets().left, 25 + panel_property.getInsets().top,
+        spinIntenceLight.setBounds(90 + panelProperty.getInsets().left, 25 + panelProperty.getInsets().top,
                 60, 25);
 
-        LabelColorLight.setBounds(25 + panel_property.getInsets().left, 110 + panel_property.getInsets().top,
+        LabelColorLight.setBounds(25 + panelProperty.getInsets().left, 110 + panelProperty.getInsets().top,
                 60, 25);
-        addСolLightButton.setBounds(25 + panel_property.getInsets().left, 135 + panel_property.getInsets().top,
+        addСolLightButton.setBounds(25 + panelProperty.getInsets().left, 135 + panelProperty.getInsets().top,
                 60, 25);
         addСolLightButton.addActionListener(e -> {
             Color get_color = JColorChooser.showDialog(null, "Choose", Color.RED);
@@ -589,28 +652,28 @@ public class Launcher extends Canvas {
                 System.out.println("objects.get(j).type == \"Точечный источник\" 2");
                 if (!complexObjectList.get(i).type.equals("Точечный источник")) {
                     mFrame.remove(panel_property_light);
-                    mFrame.add(panel_property);
+                    mFrame.add(panelProperty);
                     mFrame.repaint();
                     mFrame.revalidate();
-                    spinXtrans.setValue((int) complexObjectList.get(i).trans.getPos().getX());
-                    spinYtrans.setValue((int) complexObjectList.get(i).trans.getPos().getY());
-                    spinZtrans.setValue((int) complexObjectList.get(i).trans.getPos().getZ());
+                    spinXtrans.setValue((int) complexObjectList.get(i).trans.getPosition().getX());
+                    spinYtrans.setValue((int) complexObjectList.get(i).trans.getPosition().getY());
+                    spinZtrans.setValue((int) complexObjectList.get(i).trans.getPosition().getZ());
 
-                    spinXrot.setValue((int) complexObjectList.get(i).trans.getEulerRot().getX());
-                    spinYrot.setValue((int) complexObjectList.get(i).trans.getEulerRot().getY());
-                    spinZrot.setValue((int) complexObjectList.get(i).trans.getEulerRot().getZ());
+                    spinXrot.setValue((int) complexObjectList.get(i).trans.getEulerRotation().getX());
+                    spinYrot.setValue((int) complexObjectList.get(i).trans.getEulerRotation().getY());
+                    spinZrot.setValue((int) complexObjectList.get(i).trans.getEulerRotation().getZ());
 
                     spinXscale.setValue((int) complexObjectList.get(i).trans.getScale().getX());
                     spinYscale.setValue((int) complexObjectList.get(i).trans.getScale().getY());
                     spinZscale.setValue((int) complexObjectList.get(i).trans.getScale().getZ());
 
 
-                    if (!complexObjectList.get(i).tex_paint) {
+                    if (!complexObjectList.get(i).texPaint) {
                         radColor.setSelected(true);
                         curColor = new Color(complexObjectList.get(i).color.red, complexObjectList.get(i).color.green, complexObjectList.get(i).color.blue);
                         addСolButton.setBackground(curColor);
                         spinRefl.setValue(complexObjectList.get(i).color.special);
-                        spinRefr.setValue(complexObjectList.get(i).color.refr_koef);
+                        spinRefr.setValue(complexObjectList.get(i).color.reflectionCoefficient);
                         spinOpacity.setValue(complexObjectList.get(i).color.opacity);
                         spinSpecular.setValue(complexObjectList.get(i).color.specular);
                     } else {
@@ -621,13 +684,13 @@ public class Launcher extends Canvas {
                         spinSpecular.setValue(complexObjectList.get(i).texture.specular);
                     }
                 } else {
-                    mFrame.remove(panel_property);
+                    mFrame.remove(panelProperty);
                     mFrame.add(panel_property_light);
                     mFrame.repaint();
                     mFrame.revalidate();
-                    spinXtransLight.setValue((int) complexObjectList.get(i).trans.getPos().getX());
-                    spinYtransLight.setValue((int) complexObjectList.get(i).trans.getPos().getY());
-                    spinZtransLight.setValue((int) complexObjectList.get(i).trans.getPos().getZ());
+                    spinXtransLight.setValue((int) complexObjectList.get(i).trans.getPosition().getX());
+                    spinYtransLight.setValue((int) complexObjectList.get(i).trans.getPosition().getY());
+                    spinZtransLight.setValue((int) complexObjectList.get(i).trans.getPosition().getZ());
                     int k = 0;
                     for (int j = 0; j < i; j++) {
                         System.out.println("objects.get(j).type == \"Точечный источник\" 3");
@@ -658,19 +721,19 @@ public class Launcher extends Canvas {
         antiAliasing3.addActionListener(sliceActionListener);
 
         mFrame.add(panel);
-        mFrame.add(RenderButton);
+        mFrame.add(renderButton);
 //            m_frame.add(m_graphics);
         mFrame.add(scr);
         mFrame.add(comboBox);
         mFrame.add(LabelObjectList);
         mFrame.add(LabelObjectOption);
         mFrame.add(LabelObjects);
-        mFrame.add(AddButton);
-        mFrame.add(DeleteButton);
+        mFrame.add(addButton);
+        mFrame.add(deleteButton);
         mFrame.add(LabelAnti);
-        mFrame.add(LoadButton);
-        mFrame.add(LightСomboBox);
-        mFrame.add(AddLightButton);
+        mFrame.add(loadButton);
+        mFrame.add(lightсombobox);
+        mFrame.add(addLightButton);
         mFrame.add(antiAliasing1);
         mFrame.add(antiAliasing2);
         mFrame.add(antiAliasing3);
@@ -708,26 +771,26 @@ public class Launcher extends Canvas {
         int left_borger = 11;
         LabelLoad.setBounds(left_borger + insets.left, 0 + insets.top,
                 150, 20);
-        LoadButton.setBounds(left_borger + insets.left, 22 + insets.top,
+        loadButton.setBounds(left_borger + insets.left, 22 + insets.top,
                 150, 30);
         ////////
         LabelObjects.setBounds(left_borger + insets.left, 65 + insets.top,
                 150, 30);
         comboBox.setBounds(left_borger + insets.left, 95 + insets.top,
                 150, 30);
-        AddButton.setBounds(left_borger + insets.left, 125 + insets.top,
+        addButton.setBounds(left_borger + insets.left, 125 + insets.top,
                 150, 30);
         //////////
         int y_border = 155;
         LabelLight.setBounds(left_borger + insets.left, y_border + 10 + insets.top,
                 150, 30);
-        LightСomboBox.setBounds(left_borger + insets.left, y_border + 40 + insets.top,
+        lightсombobox.setBounds(left_borger + insets.left, y_border + 40 + insets.top,
                 150, 30);
-        AddLightButton.setBounds(left_borger + insets.left, y_border + 70 + insets.top,
+        addLightButton.setBounds(left_borger + insets.left, y_border + 70 + insets.top,
                 150, 30);
 
-        AddLightButton.addActionListener(e -> {
-            System.out.println("AddLightButton actionPerformed called");
+        addLightButton.addActionListener(e -> {
+            System.out.println("addLightButton actionPerformed called");
             addNewObject("Точечный источник", resourcePath + "icosphere.obj", new Vector4(0, 6, 0, 1),
                     new Vector4(0.1f, 0.1f, 0.1f, 1), new ColorCG(1.0f, 1.0f, 1.f, 0, 0, 0, 0));
             Light scene_light = new Light(new Vector4(0, 6, 0), new ColorCG(1, 1, 1, 0, 0, 0, 0), 1);
@@ -748,13 +811,13 @@ public class Launcher extends Canvas {
         spinAmbient.setBounds(left_borger + insets.left, 400 + insets.top,
                 60, 25);
 
-        RenderButton.setBounds(left_borger + insets.left, 430 + insets.top,
+        renderButton.setBounds(left_borger + insets.left, 430 + insets.top,
                 150, 30);
 
         // right part
         int left_botder2 = 1000;
-        LoadButton.addActionListener(e -> {
-            System.out.println("LoadButton actionPerformed called");
+        loadButton.addActionListener(e -> {
+            System.out.println("loadButton actionPerformed called");
             FileNameExtensionFilter filter = new FileNameExtensionFilter(
                     "OBJ", "obj");
             JFileChooser fileopen = new JFileChooser();
@@ -764,7 +827,7 @@ public class Launcher extends Canvas {
                 File file = fileopen.getSelectedFile();
                 Transform NewTransform = new Transform(new Vector4(0, 0.0f, 0.0f), new Vector4(1, 1, 1, 1));
                 try {
-                    String name = "figure" + find_col_name(complexObjectList, "figure");
+                    String name = "figure" + findColName(complexObjectList, "figure");
                     ComplexObject NewMesh = new ComplexObject(file.getPath(), NewTransform, "figure", new ColorCG(1.0f, 1.0f, 1.0f));
                     complexObjectList.add(NewMesh);
                     tableModel.addRow(new String[]{name});
@@ -775,7 +838,7 @@ public class Launcher extends Canvas {
             }
         });
 
-        DeleteButton.setBounds(left_botder2 + 112 + insets.left, 0 + insets.top,
+        deleteButton.setBounds(left_botder2 + 112 + insets.left, 0 + insets.top,
                 85, 20);
 
         LabelObjectList.setBounds(left_botder2 + insets.left, 0 + insets.top,
@@ -786,7 +849,7 @@ public class Launcher extends Canvas {
         LabelObjectOption.setBounds(left_botder2 + insets.left, 220 + insets.top,
                 150, 20);
 
-        panel_property.setBounds(left_botder2 + insets.left, 240 + insets.top,
+        panelProperty.setBounds(left_botder2 + insets.left, 240 + insets.top,
                 300, 400);
 
         panel_property_light.setBounds(left_botder2 + insets.left, 240 + insets.top,
@@ -807,19 +870,18 @@ public class Launcher extends Canvas {
 
     private static void addMeshesToObject(List<ComplexObject> objects, List<PrimitiveObject> sceneObjects) { // Matrix4f vp, Matrix4f v убрать
         for (ComplexObject complexObject : objects) {
-            System.out.println("objects.get(i).type == \"Точечный источник\" 4 " + complexObject);
             if (complexObject.type.equals("Точечный источник"))
                 continue;
             if (complexObject.type.equals("Сфера")) {
                 Sphere scene_sphere;
-                if (complexObject.tex_paint)
+                if (complexObject.texPaint)
                     scene_sphere = new Sphere(new Vector4(0f, 0f, 0f), 1f, complexObject.trans, complexObject.texture);
                 else
                     scene_sphere = new Sphere(new Vector4(0f, 0f, 0f), 1f, complexObject.trans, complexObject.color);
                 sceneObjects.add(scene_sphere);
             } else if (complexObject.type.equals("Тор")) {
                 Torus tor;
-                if (complexObject.tex_paint)
+                if (complexObject.texPaint)
                     tor = new Torus(1, 0.3f, complexObject.trans, complexObject.texture);
                 else
                     tor = new Torus(1, 0.3f, complexObject.trans, complexObject.color);
@@ -833,7 +895,7 @@ public class Launcher extends Canvas {
 
     @Override
     public void paint(Graphics g) {
-//            System.out.println("paint called");
+        System.out.println("paint called");
 //            counter++;
 //               setBackground(Color.WHITE);
 //            g.fillOval(130 + counter, 130 + counter,50, 60);
@@ -845,9 +907,25 @@ public class Launcher extends Canvas {
 
     public void drawObjects(RenderSceneTriangle target, Matrix vp, List<ComplexObject> objects, List<Source> lights) throws IOException {
 //            System.out.println("drawObjects called");
+//        System.out.println("VP is " + vp.toString());
+        boolean erasePhantoms = false; // is phantom was chosen @see RenderChosenObjectException
         for (ComplexObject object : objects) {
-            object.draw(target, vp, lights);
+            try {
+                object.draw(target, vp, lights);
+            } catch (RenderChosenObjectException e) {
+                object.setPhantom(false);
+                erasePhantoms = true;
+            }
         }
+        if (erasePhantoms)
+            complexObjectList.removeIf(o -> {
+                if (o.isPhantom()) {
+                    o.getParent().getConnections().remove(o.getParentConnectionType());
+                    return true;
+                }
+                return false;
+            });
+
         Transform tr1 = new Transform(new Vector4(0, 0, 0), new Vector4(1f, 1f, 1f, 1));
         ComplexObject axis1 = new ComplexObject(resourcePath + "grid1.obj", tr1, "grid", new ColorCG(1, 0, 0));
         Transform tr2 = new Transform(new Vector4(0, 0, 0), new Vector4(1f, 1f, 1f, 1));
@@ -867,20 +945,20 @@ public class Launcher extends Canvas {
         Transform object_transform = objects.get(i).trans;
 
         Transform tr11 = new Transform(new Vector4(0, 0, 0), new Vector4(1f, 1f, 1f, 1));
-        tr11 = tr11.setPos(object_transform.getPos()).rotate(object_transform.getRot());
+        tr11 = tr11.setPos(object_transform.getPosition()).rotate(object_transform.getRotation());
         if (object_transform.getScale().getX() > 1)
             tr11 = tr11.setScale(object_transform.getScale());
         ComplexObject axis11 = new ComplexObject(resourcePath + "axis_ob.obj", tr11, "axis_ob", new ColorCG(0, 0, 1));
         Transform tr21 = new Transform(new Vector4(0, 0, 0), new Vector4(1f, 1f, 1f, 1));
         tr21 = tr21.rotateFromNull(0, 0, 90);
 
-        tr21 = tr21.setPos(object_transform.getPos()).rotate(object_transform.getRot());
+        tr21 = tr21.setPos(object_transform.getPosition()).rotate(object_transform.getRotation());
         if (object_transform.getScale().getY() > 1)
             tr21 = tr21.setScale(new Vector4(object_transform.getScale().getY(), 1, 1, 1));
         ComplexObject axis21 = new ComplexObject(resourcePath + "axis_ob.obj", tr21, "axis_ob", new ColorCG(0, 1, 0));
         Transform tr31 = new Transform(new Vector4(0, 0, 0), new Vector4(1f, 1f, 1f, 1));
         tr31 = tr31.rotateFromNull(0, 90, 0);
-        tr31 = tr31.setPos(object_transform.getPos()).rotate(object_transform.getRot());
+        tr31 = tr31.setPos(object_transform.getPosition()).rotate(object_transform.getRotation());
         if (object_transform.getScale().getY() > 1)
             tr31 = tr31.setScale(new Vector4(object_transform.getScale().getZ(), 1, 1, 1));
         ComplexObject axis31 = new ComplexObject(resourcePath + "axis_ob.obj", tr31, "axis_ob", new ColorCG(1, 0, 0));
@@ -891,10 +969,10 @@ public class Launcher extends Canvas {
 
     public void Run(int width, int height) throws IOException, InterruptedException {
 
-        complexObjectList = new ArrayList<>();
+        complexObjectList = new LinkedList<>();
         lightSources = new ArrayList<>();
         lightSourcesWork = new ArrayList<>();
-        sceneObjects = new ArrayList<>();
+        sceneObjects = new LinkedList<>();
 
         Transform SphereTransform2 = new Transform(new Vector4(4, -3, 0), new Vector4(1f, 1f, 1f, 1));
         ComplexObject SphereMesh2 = new ComplexObject(resourcePath + "sphere.obj", SphereTransform2, "Сфера", new ColorCG(0, 1, 1, 0.5f, 0.5f, 0, 0));
@@ -926,8 +1004,8 @@ public class Launcher extends Canvas {
         camera.rotate(camera.getCameraRight(), (float) Math.PI * 10.f / 180.f);
         camera.move(camera.getCameraDirection(), -6);
         //Matrix4f vp = camera.getViewProjection();
-        target.Clear((byte) 0x00);
-        target.NewZBuffer();
+        target.clear((byte) 0x00);
+        target.newZBuffer();
         ColorCG white_light = new ColorCG(1.0f, 1.0f, 1.0f, 0, 0, 0, 0);
         ColorCG white_light2 = new ColorCG(1.0f, 1.0f, 1.0f, 0, 0, 0, 0);
         Light scene_light = new Light(new Vector4(7, 4f, -5), white_light2, 1);
@@ -938,6 +1016,11 @@ public class Launcher extends Canvas {
         lightSourcesWork.add(scene_light2);
 
         update();
+    }
+
+
+    private Runnable runnableUpdate() {
+        return this::update;
     }
 
     private void update() {
@@ -951,8 +1034,8 @@ public class Launcher extends Canvas {
             camera.update(lastEvent, 0.05);
             lastEvent = null;
 
-            target.Clear((byte) 0x00);
-            target.NewZBuffer();
+            target.clear((byte) 0x00);
+            target.newZBuffer();
 
             lightSourcesWork.get(0).setLightPosition(camera.getCameraDirection().negative());
             try {
@@ -965,20 +1048,21 @@ public class Launcher extends Canvas {
         } else {
             camera.update(lastEvent, 0.05);
             lastEvent = null;
-            Matrix vp = camera.getViewProjection();
-            target.Clear((byte) 0x00);
-            target.NewZBuffer();
+            target.clear((byte) 0x00);
+            target.newZBuffer();
+
+            sceneObjects.clear();
+            addMeshesToObject(complexObjectList, sceneObjects);
+
+            target.clear((byte) 0x00);
+            target.newZBuffer();
+
+            rayTracing.renderRayTracing(target, width, height, camera, sceneObjects, lightSources, ambient, antiAliasingValue);
+
+            swapBuffers();
         }
 
-        sceneObjects.clear();
-        addMeshesToObject(complexObjectList, sceneObjects);
 
-        target.Clear((byte) 0x00);
-        target.NewZBuffer();
-
-        rayTracing.renderRayTracing(target, width, height, camera, sceneObjects, lightSources, ambient, antiAliasingValue);
-
-        swapBuffers();
     }
 
     public void swapBuffers() {
@@ -988,11 +1072,19 @@ public class Launcher extends Canvas {
             mFrame.createBufferStrategy(4);
             return;
         }
-        mFrameBuffer.CopyToByteArray(mDisplayComponents);
+
+        mFrameBuffer.copyToByteArray(mDisplayComponents);
         mGraphics.drawImage(mDisplayImage, 0, 0,
                 mFrameBuffer.getWidth(), mFrameBuffer.getHeight(), null);
         mBufferStrategy.show();
-
+        mDisplayImage.setRGB(mouseX, mouseY, 255);
+        mDisplayImage.setRGB(mouseX + 1, mouseY, 255);
+        mDisplayImage.setRGB(mouseX, mouseY + 1, 255);
+        mDisplayImage.setRGB(mouseX + 1, mouseY + 1, 255);
+//        mDisplayImage.setRGB(10,10, 255);
+//        mDisplayImage.setRGB(11,10, 255);
+//        mDisplayImage.setRGB(10,11, 255);
+//        mDisplayImage.setRGB(11,11, 255);
 //                            g.drawImage(m_displayImage, 0, 0,
 //                                    m_frameBuffer.getWidth(), m_frameBuffer.getHeight(), null);
 //                            g.dispose();
@@ -1009,15 +1101,29 @@ public class Launcher extends Canvas {
 //                            m_frame.pack();
     }
 
+    void addAndDisplayPhantoms(String path, Vector4 pos, Vector4 scale) {
+        System.out.println("addAndDisplayPhantoms called");
+        Transform newTransform = new Transform(pos, scale);
+        complexObjectList.forEach(o -> {
+//                Arrays.stream(ObjectConnectionType.values())
+//                        .forEach(o -> );
+//                o.getConnections().
+        });
+//            String name = str + findColName(complexObjectList, str);
+//            ComplexObject newMesh = new ComplexObject(path, newTransform, "Phantom" + UUID.randomUUID().toString(), cl);
+//            complexObjectList.add(newMesh);
+//            addMeshesToObject(complexObjectList, sceneObjects);
+//            tableModel.addRow(new String[]{name});
+        update();
+    }
+
     void addNewObject(String str, String path, Vector4 pos, Vector4 scale, ColorCG cl) {
         System.out.println("addNewObject called");
-        ComplexObject NewMesh;
-        Transform NewTransform;
-        NewTransform = new Transform(pos, scale);
+        Transform newTransform = new Transform(pos, scale);
         try {
-            String name = str + find_col_name(complexObjectList, str);
-            NewMesh = new ComplexObject(path, NewTransform, str, cl);
-            complexObjectList.add(NewMesh);
+            String name = str + findColName(complexObjectList, str);
+            ComplexObject newMesh = new ComplexObject(path, newTransform, str, cl);
+            complexObjectList.add(newMesh);
             addMeshesToObject(complexObjectList, sceneObjects);
             tableModel.addRow(new String[]{name});
         } catch (IOException ex) {
@@ -1025,10 +1131,9 @@ public class Launcher extends Canvas {
         }
 
         update();
-
     }
 
-    int find_col_name(List<ComplexObject> objects, String name) {
+    int findColName(List<ComplexObject> objects, String name) {
         int k = 0;
         for (ComplexObject object : objects) {
             if (object.type.equals(name)) k++;
@@ -1076,33 +1181,16 @@ public class Launcher extends Canvas {
         public void actionPerformed(ActionEvent e) {
             String str = (String) comboBox.getSelectedItem();
 
-            switch (str) {
-                case "Куб":
-                    addNewObject(str, resourcePath + "cube.obj", new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                    break;
-                case "Сфера":
-                    addNewObject(str, resourcePath + "sphere.obj", new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                    break;
-                case "Конус":
-                    addNewObject(str, resourcePath + "conus2.obj", new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                    break;
-                case "Цилиндр":
-                    addNewObject(str, resourcePath + "cylinder2.obj", new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                    break;
-                case "Плоскость":
-                    addNewObject(str, resourcePath + "plane.obj", new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                    break;
-                case "Пирамида":
-                    addNewObject(str, resourcePath + "pyramyd.obj", new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                    break;
-                case "Тор":
-                    addNewObject(str, resourcePath + "tor2.obj", new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                    break;
+            if (complexObjectList.isEmpty()) {
+                StandardObjects object = Arrays.stream(StandardObjects.values())
+                        .filter(o -> o.getDisplayName().equals(str))
+                        .findAny()
+                        .orElseThrow(RuntimeException::new);
+                addNewObject(str, resourcePath + object.getObjectFileName(), new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
+                update();
+            } else {
 
             }
-
-            update();
-
         }
     }
 }

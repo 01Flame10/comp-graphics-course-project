@@ -63,7 +63,7 @@ public class Torus extends PrimitiveObject {
             int i1 = (int) x1, j1 = (int) y1;
             //System.out.println(x1 + " " + y1);
             if (i1 >= 0 && j1 >= 0 && i1 < texture.getWidth() && j1 < texture.getHeight()) {
-                float[] colors = texture.get_pixel_color(i1, j1);
+                float[] colors = texture.getPixelColor(i1, j1);
                 ColorCG color_current = new ColorCG(colors[0], colors[1], colors[2]);
                 return color_current;
             }

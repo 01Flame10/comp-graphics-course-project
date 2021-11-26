@@ -86,7 +86,7 @@ public class Edge {
         return lightAmt;
     }
 
-    public void Step() {
+    public void step() {
         x += xStep;
         texCoordX += texCoordXStep;
         texCoordY += texCoordYStep;

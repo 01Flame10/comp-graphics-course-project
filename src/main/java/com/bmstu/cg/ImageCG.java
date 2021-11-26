@@ -7,15 +7,15 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class ImageCG {
-    private final int width_image;
-    private final int height_image;
-    private final byte[] m_components;
+    private final int widthImage;
+    private final int heightImage;
+    private final byte[] mComponents;
     public float specular, refl, refr, opacity;
 
     public ImageCG(int width, int height) {
-        width_image = width;
-        height_image = height;
-        m_components = new byte[width_image * height_image * 4];
+        widthImage = width;
+        heightImage = height;
+        mComponents = new byte[widthImage * heightImage * 4];
         refl = 0;
         refr = 0;
         opacity = 0;
@@ -45,9 +45,9 @@ public class ImageCG {
             components[i * 4 + 3] = (byte) ((pixel >> 16) & 0xFF); // R
         }
 
-        width_image = width;
-        height_image = height;
-        m_components = components;
+        widthImage = width;
+        heightImage = height;
+        mComponents = components;
         refl = reflv;
         refr = refrv;
         specular = specular_v;
@@ -55,51 +55,67 @@ public class ImageCG {
     }
 
     public int getWidth() {
-        return width_image;
+        return widthImage;
     }
 
     public int getHeight() {
-        return height_image;
+        return heightImage;
     }
 
     public byte getComponent(int index) {
-        if (index >= 0 && index < m_components.length)
-            return m_components[index];
+        if (index >= 0 && index < mComponents.length)
+            return mComponents[index];
         else
-            return m_components[0];
+            return mComponents[0];
     }
 
-    public void Clear(byte shade) {
-        Arrays.fill(m_components, shade);
+    public void clear(byte shade) {
+        Arrays.fill(mComponents, shade);
     }
 
-    public void DrawPixel(int x, int y, byte a, byte b, byte g, byte r) {
-        int index = (x + y * width_image) * 4;
-        m_components[index] = a;
-        m_components[index + 1] = b;
-        m_components[index + 2] = g;
-        m_components[index + 3] = r;
+    // when renders
+    public void drawPixel(int x, int y, byte a, byte b, byte g, byte r) {
+        if (x == 100 && y == 100) {
+            System.out.println("100/100");
+        }
+        int index = (x + y * widthImage) * 4;
+        mComponents[index] = a;
+        mComponents[index + 1] = b;
+        mComponents[index + 2] = g;
+        mComponents[index + 3] = r;
+//        drawSnippet();
     }
 
-    public void DrawPixelLight(int x, int y, byte a, byte b, byte g, byte r, float lightAmt) {
-        int index = (x + y * width_image) * 4;
-        m_components[index] = (byte) ((a & 0xFF) * lightAmt);
-        m_components[index + 1] = (byte) ((b & 0xFF) * lightAmt);
-        m_components[index + 2] = (byte) ((g & 0xFF) * lightAmt);
-        m_components[index + 3] = (byte) ((r & 0xFF) * lightAmt);
+    /// when run without render
+    public void drawPixelLight(int x, int y, byte a, byte b, byte g, byte r, float lightAmt) {
+        int index = (x + y * widthImage) * 4;
+        mComponents[index] = (byte) ((a & 0xFF) * lightAmt);
+        mComponents[index + 1] = (byte) ((b & 0xFF) * lightAmt);
+        mComponents[index + 2] = (byte) ((g & 0xFF) * lightAmt);
+        mComponents[index + 3] = (byte) ((r & 0xFF) * lightAmt);
+//        drawSnippet();
     }
 
-    public void CopyPixel(int destX, int destY, int srcX, int srcY, ImageCG src, float lightAmt) {
-        int destIndex = (destX + destY * width_image) * 4;
+    // TODO: delete
+    private void drawSnippet() {
+        int index = (100 + 100 * widthImage) * 4;
+        mComponents[index] = (byte) 255;
+        mComponents[index + 1] = (byte) 255;
+        mComponents[index + 2] = (byte) 255;
+        mComponents[index + 3] = (byte) 255;
+    }
+
+    public void copyPixel(int destX, int destY, int srcX, int srcY, ImageCG src, float lightAmt) {
+        int destIndex = (destX + destY * widthImage) * 4;
         int srcIndex = (srcX + srcY * src.getWidth()) * 4;
 
-        m_components[destIndex] = (byte) ((src.getComponent(srcIndex) & 0xFF) * lightAmt);
-        m_components[destIndex + 1] = (byte) ((src.getComponent(srcIndex + 1) & 0xFF) * lightAmt);
-        m_components[destIndex + 2] = (byte) ((src.getComponent(srcIndex + 2) & 0xFF) * lightAmt);
-        m_components[destIndex + 3] = (byte) ((src.getComponent(srcIndex + 3) & 0xFF) * lightAmt);
+        mComponents[destIndex] = (byte) ((src.getComponent(srcIndex) & 0xFF) * lightAmt);
+        mComponents[destIndex + 1] = (byte) ((src.getComponent(srcIndex + 1) & 0xFF) * lightAmt);
+        mComponents[destIndex + 2] = (byte) ((src.getComponent(srcIndex + 2) & 0xFF) * lightAmt);
+        mComponents[destIndex + 3] = (byte) ((src.getComponent(srcIndex + 3) & 0xFF) * lightAmt);
     }
 
-    public float[] get_pixel_color(int srcX, int srcY) {
+    public float[] getPixelColor(int srcX, int srcY) {
 
         int srcIndex = (srcX + srcY * this.getWidth()) * 4;
         float r = (this.getComponent(srcIndex + 3) & 0xFF) / 255.f;
@@ -108,11 +124,15 @@ public class ImageCG {
         return new float[]{r, g, b};
     }
 
-    public void CopyToByteArray(byte[] dest) {
-        for (int i = 0; i < width_image * height_image; i++) {
-            dest[i * 3] = m_components[i * 4 + 1];
-            dest[i * 3 + 1] = m_components[i * 4 + 2];
-            dest[i * 3 + 2] = m_components[i * 4 + 3];
+    public void copyToByteArray(byte[] dest) {
+        for (int i = 0; i < widthImage * heightImage; i++) {
+            dest[i * 3] = mComponents[i * 4 + 1];
+            dest[i * 3 + 1] = mComponents[i * 4 + 2];
+            dest[i * 3 + 2] = mComponents[i * 4 + 3];
         }
+    }
+
+    public byte[] getMComponents() {
+        return mComponents;
     }
 }
