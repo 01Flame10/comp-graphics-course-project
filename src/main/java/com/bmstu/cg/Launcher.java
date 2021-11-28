@@ -140,22 +140,22 @@ public class Launcher extends Canvas {
 //                                Vector4::add)));
                 phantomChooseMode = !phantomChooseMode;
                 System.out.println("PHANTOM MODE SET " + phantomChooseMode);
-                if (phantomChooseMode) {
-                    ComplexObject phantomReference = new ComplexObject(resourcePath + StandardObjects.CUBE.getObjectFileName(), new Transform(new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1)), StandardObjects.CUBE.getDisplayName(), new ColorCG(1.0f, 1.0f, 1.0f));
-                    complexObjectList.addAll(complexObjectList.get(0).createAvailablePhantoms(phantomReference));
-
-                } else {
-                    System.out.println("DELETING");
-                    complexObjectList.removeIf(o -> {
-                        if (o.isPhantom()) {
-                            o.getParent().getConnections().remove(o.getParentConnectionType());
-                            return true;
-                        }
-                        return false;
-                    });
-//                    complexObjectList.get(0).getConnections().clear(); // TODO change
-//                    complexObjectList.removeIf(ComplexObject::isPhantom);
-                }
+//                if (phantomChooseMode) {
+//                    ComplexObject phantomReference = new ComplexObject(resourcePath + StandardObjects.CUBE.getObjectFileName(), new Transform(new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1)), StandardObjects.CUBE.getDisplayName(), new ColorCG(1.0f, 1.0f, 1.0f));
+//                    complexObjectList.addAll(complexObjectList.get(0).createAvailablePhantoms(phantomReference));
+//
+//                } else {
+//                    System.out.println("DELETING");
+//                    complexObjectList.removeIf(o -> {
+//                        if (o.isPhantom()) {
+//                            o.getParent().getConnections().remove(o.getParentConnectionType());
+//                            return true;
+//                        }
+//                        return false;
+//                    });
+////                    complexObjectList.get(0).getConnections().clear(); // TODO change
+////                    complexObjectList.removeIf(ComplexObject::isPhantom);
+//                }
                 mouseX = e.getX();
                 mouseY = e.getY();
 //                mDisplayImage.setRGB(e.getX(),e.getY(), 255);
@@ -625,23 +625,23 @@ public class Launcher extends Canvas {
         addСolLightButton.setBounds(25 + panelProperty.getInsets().left, 135 + panelProperty.getInsets().top,
                 60, 25);
         addСolLightButton.addActionListener(e -> {
-            Color get_color = JColorChooser.showDialog(null, "Choose", Color.RED);
-            if (get_color == null)
+            Color getColor = JColorChooser.showDialog(null, "Choose", Color.RED);
+            if (getColor == null)
                 return;
-            lightColor = get_color;
+            lightColor = getColor;
             addСolLightButton.setBackground(lightColor);
             int i = objectListPanel.getSelectedRow();
             if (i < 0)
                 return;
 
-            ColorCG new_color = new ColorCG(lightColor.getRed() / 255.f, lightColor.getGreen() / 255.f, lightColor.getBlue() / 255.f, 0, 0, 0, 0);
+            ColorCG newColor = new ColorCG(lightColor.getRed() / 255.f, lightColor.getGreen() / 255.f, lightColor.getBlue() / 255.f, 0, 0, 0, 0);
             int k = 0;
             for (int j = 0; j < i; j++) {
                 System.out.println("objects.get(j).type == \"Точечный источник\" 1");
                 if (complexObjectList.get(j).type.equals("Точечный источник")) k++;
             }
             //System.out.println(k+ "  dfdfdfdfddfd   "+  i);
-            lightSources.get(k).setLightColor(new_color);
+            lightSources.get(k).setLightColor(newColor);
             update();
         });
 
@@ -825,15 +825,11 @@ public class Launcher extends Canvas {
             int ret = fileopen.showDialog(null, "Открыть файл");
             if (ret == JFileChooser.APPROVE_OPTION) {
                 File file = fileopen.getSelectedFile();
-                Transform NewTransform = new Transform(new Vector4(0, 0.0f, 0.0f), new Vector4(1, 1, 1, 1));
-                try {
-                    String name = "figure" + findColName(complexObjectList, "figure");
-                    ComplexObject NewMesh = new ComplexObject(file.getPath(), NewTransform, "figure", new ColorCG(1.0f, 1.0f, 1.0f));
-                    complexObjectList.add(NewMesh);
-                    tableModel.addRow(new String[]{name});
-                } catch (IOException ex) {
-                    Logger.getLogger(Launcher.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                Transform newTransform = new Transform(new Vector4(0, 0.0f, 0.0f), new Vector4(1, 1, 1, 1));
+                String name = "figure" + findColName(complexObjectList, "figure");
+                ComplexObject newMesh = new ComplexObject(file.getPath(), newTransform, "figure", new ColorCG(1.0f, 1.0f, 1.0f));
+                complexObjectList.add(newMesh);
+                tableModel.addRow(new String[]{name});
                 update();
             }
         });
@@ -873,12 +869,12 @@ public class Launcher extends Canvas {
             if (complexObject.type.equals("Точечный источник"))
                 continue;
             if (complexObject.type.equals("Сфера")) {
-                Sphere scene_sphere;
+                Sphere sceneSphere;
                 if (complexObject.texPaint)
-                    scene_sphere = new Sphere(new Vector4(0f, 0f, 0f), 1f, complexObject.trans, complexObject.texture);
+                    sceneSphere = new Sphere(new Vector4(0f, 0f, 0f), 1f, complexObject.trans, complexObject.texture);
                 else
-                    scene_sphere = new Sphere(new Vector4(0f, 0f, 0f), 1f, complexObject.trans, complexObject.color);
-                sceneObjects.add(scene_sphere);
+                    sceneSphere = new Sphere(new Vector4(0f, 0f, 0f), 1f, complexObject.trans, complexObject.color);
+                sceneObjects.add(sceneSphere);
             } else if (complexObject.type.equals("Тор")) {
                 Torus tor;
                 if (complexObject.texPaint)
@@ -913,8 +909,11 @@ public class Launcher extends Canvas {
             try {
                 object.draw(target, vp, lights);
             } catch (RenderChosenObjectException e) {
+                String name = object.getType() + findColName(complexObjectList, object.getType());
+                tableModel.addRow(new String[]{name});
                 object.setPhantom(false);
                 erasePhantoms = true;
+                phantomChooseMode = false;
             }
         }
         if (erasePhantoms)
@@ -1077,10 +1076,10 @@ public class Launcher extends Canvas {
         mGraphics.drawImage(mDisplayImage, 0, 0,
                 mFrameBuffer.getWidth(), mFrameBuffer.getHeight(), null);
         mBufferStrategy.show();
-        mDisplayImage.setRGB(mouseX, mouseY, 255);
-        mDisplayImage.setRGB(mouseX + 1, mouseY, 255);
-        mDisplayImage.setRGB(mouseX, mouseY + 1, 255);
-        mDisplayImage.setRGB(mouseX + 1, mouseY + 1, 255);
+//        mDisplayImage.setRGB(mouseX, mouseY, 255);
+//        mDisplayImage.setRGB(mouseX + 1, mouseY, 255);
+//        mDisplayImage.setRGB(mouseX, mouseY + 1, 255);
+//        mDisplayImage.setRGB(mouseX + 1, mouseY + 1, 255);
 //        mDisplayImage.setRGB(10,10, 255);
 //        mDisplayImage.setRGB(11,10, 255);
 //        mDisplayImage.setRGB(10,11, 255);
@@ -1120,15 +1119,11 @@ public class Launcher extends Canvas {
     void addNewObject(String str, String path, Vector4 pos, Vector4 scale, ColorCG cl) {
         System.out.println("addNewObject called");
         Transform newTransform = new Transform(pos, scale);
-        try {
-            String name = str + findColName(complexObjectList, str);
-            ComplexObject newMesh = new ComplexObject(path, newTransform, str, cl);
-            complexObjectList.add(newMesh);
-            addMeshesToObject(complexObjectList, sceneObjects);
-            tableModel.addRow(new String[]{name});
-        } catch (IOException ex) {
-            Logger.getLogger(Launcher.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        String name = str + findColName(complexObjectList, str);
+        ComplexObject newMesh = new ComplexObject(path, newTransform, str, cl);
+        complexObjectList.add(newMesh);
+        addMeshesToObject(complexObjectList, sceneObjects);
+        tableModel.addRow(new String[]{name});
 
         update();
     }
@@ -1177,19 +1172,36 @@ public class Launcher extends Canvas {
     }
 
     public class AddObjectListener implements ActionListener {
+        @SneakyThrows
         @Override
         public void actionPerformed(ActionEvent e) {
             String str = (String) comboBox.getSelectedItem();
+            StandardObjects object = Arrays.stream(StandardObjects.values())
+                    .filter(o -> o.getDisplayName().equals(str))
+                    .findAny()
+                    .orElseThrow(RuntimeException::new);
+            if (!phantomChooseMode) {
+                if (complexObjectList.isEmpty()) {
+                    addNewObject(str, resourcePath + object.getObjectFileName(), new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
+                    update();
+                } else {
+                    System.out.println("Not alone");
+                    phantomChooseMode = true;
 
-            if (complexObjectList.isEmpty()) {
-                StandardObjects object = Arrays.stream(StandardObjects.values())
-                        .filter(o -> o.getDisplayName().equals(str))
-                        .findAny()
-                        .orElseThrow(RuntimeException::new);
-                addNewObject(str, resourcePath + object.getObjectFileName(), new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
-                update();
-            } else {
-
+                    complexObjectList.addAll(complexObjectList.stream()
+                            .map((o) -> {
+                                ComplexObject phantomReference = new ComplexObject(resourcePath + object.getObjectFileName(),
+                                        o.getTrans(),
+                                        str,
+                                        new ColorCG(1.0f, 1.0f, 1.0f));
+                                return o.createAvailablePhantoms(phantomReference);
+                            })
+                            .reduce(new ArrayList<>(), (accumulator, target) -> {
+                                accumulator.addAll(target);
+                                return accumulator;
+                            }));
+                    update();
+                }
             }
         }
     }

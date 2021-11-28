@@ -2,6 +2,7 @@ package com.bmstu.cg;
 
 import com.bmstu.cg.enums.ObjectConnectionType;
 import lombok.Getter;
+import lombok.SneakyThrows;
 
 import java.util.*;
 import java.io.IOException;
@@ -25,7 +26,8 @@ public class ComplexObject {
     private ObjectConnectionType parentConnectionType;
     private Map<ObjectConnectionType, ComplexObject> connections;
 
-    public ComplexObject(String fileName, Transform trans_v, String type_v, ColorCG color_v) throws IOException {
+    @SneakyThrows
+    public ComplexObject(String fileName, Transform trans_v, String type_v, ColorCG color_v) {
 //        uuid = UUID.randomUUID().toString();
         Model model = new OBJModel(fileName).toIndexedModel();
 //        model.get
@@ -44,6 +46,24 @@ public class ComplexObject {
         type = type_v;
         isPhantom = false;
         connections = new HashMap<>();
+    }
+
+    public ComplexObject(ComplexObject object) {
+//        this.vertexes = object.getVertexes().stream()
+//                .map(v -> new Vertex(
+//                        new Vector4(v.getPosition()),
+//                        new Vector4(v.getTexCoords()),
+//                        new Vector4(v.getNormal())))
+//                .collect(Collectors.toList());
+//        this.indexes = new ArrayList<>(phantomObject.indexes);
+//        this.texture = phantomObject.texture;
+//        this.color = phantomObject.color.setOpacity(0.5f);//new ColorCG(0, 0, 1);
+//        this.texPaint = texPaint;
+//        this.trans = new Transform(phantomObject.getTrans());
+//        this.type = phantomObject.type;
+//        this.parent = this;
+//        this.isPhantom = true;
+//        this.parentConnectionType = mountType;
     }
 
     private ComplexObject() {
@@ -82,7 +102,7 @@ public class ComplexObject {
 //        + " v2: " + vertexes.get(indexes.get(1)).transform(mvp, transform).getPosition()
 //        + " v3: " + vertexes.get(indexes.get(2)).transform(mvp, transform).getPosition());
         ColorCG originalColor = color;
-        System.out.println("OPACITY " + color.opacity);
+//        System.out.println("OPACITY " + color.opacity);
         if (isPhantom) {
             color = new ColorCG(color.getRed(), color.getGreen(), color.getBlue(), color.getOpacity());
         }
@@ -111,7 +131,8 @@ public class ComplexObject {
     public List<ComplexObject> createAvailablePhantoms(ComplexObject phantomObject) {
         List<ComplexObject> availablePhantoms = new LinkedList<>();
         Supplier<Stream<Vertex>> vertexesSupplier = vertexes::stream;
-
+        System.out.println("Creating phantpms for " + this.getType() + " y: " + this.getVertexes().stream()
+                .map(v -> String.valueOf(v.getPosition().getY())).collect(Collectors.joining(", ")));
         Arrays.stream(ObjectConnectionType.values())
                 .filter(v -> !connections.containsKey(v))
                 .forEach(key -> {
@@ -220,7 +241,10 @@ public class ComplexObject {
                         new Vector4(v.getTexCoords()),
                         new Vector4(v.getNormal())))
                 .collect(Collectors.toList());
-        copy.connections = new HashMap<>();
+        System.out.println("Creating phantom on " + mountType + " y " + copy.getVertexes().stream()
+                .map(v -> String.valueOf(v.getPosition().getY())).collect(Collectors.joining(", ")));
+
+                copy.connections = new HashMap<>();
         copy.indexes = new ArrayList<>(phantomObject.indexes);
         copy.texture = phantomObject.texture;
         copy.color = phantomObject.color.setOpacity(0.5f);//new ColorCG(0, 0, 1);
