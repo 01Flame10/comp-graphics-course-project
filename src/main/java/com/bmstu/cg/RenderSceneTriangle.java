@@ -5,7 +5,6 @@ import com.bmstu.cg.exception.RenderChosenObjectException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class RenderSceneTriangle extends ImageCG {
     private float[] zBuffer;
@@ -96,7 +95,6 @@ public class RenderSceneTriangle extends ImageCG {
         Vertex minYVert = v1.transform(screenSpaceTransform, identity).perspectiveDivide();
         Vertex midYVert = v2.transform(screenSpaceTransform, identity).perspectiveDivide();
         Vertex maxYVert = v3.transform(screenSpaceTransform, identity).perspectiveDivide();
-//        System.out.println("xMin: " + minYVert.getX() + " xMax: " + maxYVert.getX() + " yStart: " + minYVert.getY() + "yEnd: " + maxYVert.getY());
 
         if (minYVert.triangleAreaTimesTwo(maxYVert, midYVert) >= 0) {
             return;
@@ -126,8 +124,8 @@ public class RenderSceneTriangle extends ImageCG {
     }
 
     private void scanTriangle(Vertex minYVert, Vertex midYVert,
-                              Vertex maxYVert, boolean handedness, 
-                              ImageCG texture, ColorCG color, boolean texPaint, 
+                              Vertex maxYVert, boolean handedness,
+                              ImageCG texture, ColorCG color, boolean texPaint,
                               List<Source> lightsArray, boolean isPhantom) {
         Interpolation gradients = new Interpolation(minYVert, midYVert, maxYVert, lightsArray.get(0).getLightPosition());
         Edge topToBottom = new Edge(gradients, minYVert, maxYVert, 0);
@@ -138,7 +136,7 @@ public class RenderSceneTriangle extends ImageCG {
         scanEdges(gradients, topToBottom, middleToBottom, handedness, texture, color, texPaint, isPhantom);
     }
 
-    private void scanEdges(Interpolation gradients, Edge a, Edge b, 
+    private void scanEdges(Interpolation gradients, Edge a, Edge b,
                            boolean handedness, ImageCG texture, ColorCG color, boolean texPaint, boolean isPhantom) {
         Edge left = a;
         Edge right = b;
@@ -158,7 +156,7 @@ public class RenderSceneTriangle extends ImageCG {
         }
     }
 
-    private void drawLine(Interpolation gradients, Edge left, Edge right, 
+    private void drawLine(Interpolation gradients, Edge left, Edge right,
                           int j, ImageCG texture, ColorCG color, boolean texPaint, boolean isPhantom) {
         int xMin = (int) Math.ceil(left.getX());
         int xMax = (int) Math.ceil(right.getX());
@@ -174,7 +172,7 @@ public class RenderSceneTriangle extends ImageCG {
         float oneOnZ = left.getOneOverZ() + oneOverZXStep * xDopStep;
         float depth = left.getDepth() + depthXStep * xDopStep;
         float lightAmt = left.getLightAmt() + lightAmtXStep * xDopStep;
-        boolean isColumnPhantom = Launcher.mouseY == j && Launcher.phantomChooseMode && isPhantom;
+        boolean isColumnPhantom = Launcher.mouseY == j && Launcher.phantomChooseMode && Launcher.mouseClickedOnPhantomMode && isPhantom;
         for (int i = xMin; i < xMax; i++) {
             if (Launcher.mouseX == i && isColumnPhantom) {
                 throw new RenderChosenObjectException();

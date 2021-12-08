@@ -10,6 +10,8 @@ import java.awt.event.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.DataBufferByte;
 import java.awt.GridLayout;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.*;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -25,7 +27,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.imageio.ImageIO;
 import javax.swing.event.ChangeListener;
 
 import javax.swing.table.DefaultTableModel;
@@ -33,6 +34,13 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Launcher extends Canvas {
 
+    /**
+     * @see RenderSceneTriangle@drawLine
+     */
+    public static int mouseX;
+    public static int mouseY;
+    public static boolean phantomChooseMode = false;
+    public static boolean mouseClickedOnPhantomMode = false;
     private static int workPerforming;
     private static List<ComplexObject> complexObjectList;
     private static List<Source> lightSources;
@@ -44,8 +52,8 @@ public class Launcher extends Canvas {
     private final byte[] mDisplayComponents;
     private final BufferStrategy mBufferStrategy;
     private final Graphics mGraphics;
-
     private final Input mInput;
+    private final String resourcePath = "/Users/admin/Documents/cgcourse/src/main/resources/";
     private JRadioButton antiAliasing1;
     private JRadioButton antiAliasing2;
     private JRadioButton antiAliasing3;
@@ -54,7 +62,7 @@ public class Launcher extends Canvas {
     private JTable objectListPanel;
     private JComboBox comboBox;
     private DefaultTableModel tableModel;
-    private ImageJPanel imageTexture;
+    //    private ImageJPanel imageTexture;
     private JButton addTexButton;
     private JButton addСolButton;
     private JButton addСolLightButton;
@@ -65,25 +73,15 @@ public class Launcher extends Canvas {
     private int antiAliasingValue;
     private float ambient;
     private Camera camera;
-
     private RenderSceneTriangle target;
     private RayTracing rayTracing = new RayTracing();
     private int width;
     private int height;
-
     private KeyEvent lastEvent;
+    private boolean redrawAfterPhantomChoice = false;
     private boolean isObjectPlacementActive = false;
     private int mouseMoveEventFlushSize = 25;
     private int mouseMoveEventCounter = 25;
-
-    /**
-     * @see RenderSceneTriangle@drawLine
-     */
-    public static int mouseX;
-    public static int mouseY;
-    public static boolean phantomChooseMode = false;
-
-    private final String resourcePath = "/home/flame/Documents/comp-graphics-course-project/src/main/resources/";
 
     public Launcher(int width, int height, String title, int mode) throws IOException {
         this.width = width;
@@ -138,7 +136,7 @@ public class Launcher extends Canvas {
 //                        .map(Vertex::getPosition)
 //                        .reduce(new Vector4(0, 0, 0),
 //                                Vector4::add)));
-                phantomChooseMode = !phantomChooseMode;
+//                phantomChooseMode = !phantomChooseMode;
                 System.out.println("PHANTOM MODE SET " + phantomChooseMode);
 //                if (phantomChooseMode) {
 //                    ComplexObject phantomReference = new ComplexObject(resourcePath + StandardObjects.CUBE.getObjectFileName(), new Transform(new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1)), StandardObjects.CUBE.getDisplayName(), new ColorCG(1.0f, 1.0f, 1.0f));
@@ -156,8 +154,11 @@ public class Launcher extends Canvas {
 ////                    complexObjectList.get(0).getConnections().clear(); // TODO change
 ////                    complexObjectList.removeIf(ComplexObject::isPhantom);
 //                }
-                mouseX = e.getX();
-                mouseY = e.getY();
+                if (phantomChooseMode) {
+                    mouseX = e.getX();
+                    mouseY = e.getY();
+                    mouseClickedOnPhantomMode = true;
+                }
 //                mDisplayImage.setRGB(e.getX(),e.getY(), 255);
 //                mDisplayImage.setRGB(e.getX(),e.getY() + 1, 255);
 //                mDisplayImage.setRGB(e.getX() + 1,e.getY(), 255);
@@ -231,7 +232,7 @@ public class Launcher extends Canvas {
         JLabel LabelObjects = new JLabel("Стандартные объекты:");
         JLabel LabelLight = new JLabel("Свет:");
         JLabel LabelLoad = new JLabel("Загрузить объект:");
-        JLabel LabelAnti = new JLabel("Сглаживание:");
+//        JLabel LabelAnti = new JLabel("Сглаживание:");
         JLabel LabelTrans = new JLabel("Позиция:");
         JLabel LabelTrans2 = new JLabel("Позиция:");
         JLabel LabelRot = new JLabel("Поворот:");
@@ -246,10 +247,10 @@ public class Launcher extends Canvas {
         JLabel LabelColorLight = new JLabel("Цвет:");
 
 
-        JLabel labelRefl = new JLabel("Отражение:");
-        JLabel labelRefr = new JLabel("Преломление:");
-        JLabel labelOpacity = new JLabel("Прозрачность:");
-        JLabel labelSpecular = new JLabel("Блеск:");
+//        JLabel labelRefl = new JLabel("Отражение:");
+//        JLabel labelRefr = new JLabel("Преломление:");
+//        JLabel labelOpacity = new JLabel("Прозрачность:");
+//        JLabel labelSpecular = new JLabel("Блеск:");
         JLabel LabelAmbient = new JLabel("Окружающий свет:");
 
         SpinnerNumberModel modeltrans1 = new SpinnerNumberModel(0.0, -100.0, 100.0, 0.1);
@@ -283,14 +284,14 @@ public class Launcher extends Canvas {
         JSpinner spinAmbient = new JSpinner(model6);
         spinAmbient.setValue(ambient);
 
-        SpinnerNumberModel model1 = new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1);
-        JSpinner spinRefl = new JSpinner(model1);
-        SpinnerNumberModel model2 = new SpinnerNumberModel(0.0, 0.0, 10.0, 0.1);
-        JSpinner spinRefr = new JSpinner(model2);
-        SpinnerNumberModel model3 = new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1);
-        JSpinner spinOpacity = new JSpinner(model3);
-        SpinnerNumberModel model4 = new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1);
-        JSpinner spinSpecular = new JSpinner(model4);
+//        SpinnerNumberModel model1 = new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1);
+//        JSpinner spinRefl = new JSpinner(model1);
+//        SpinnerNumberModel model2 = new SpinnerNumberModel(0.0, 0.0, 10.0, 0.1);
+//        JSpinner spinRefr = new JSpinner(model2);
+//        SpinnerNumberModel model3 = new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1);
+//        JSpinner spinOpacity = new JSpinner(model3);
+//        SpinnerNumberModel model4 = new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1);
+//        JSpinner spinSpecular = new JSpinner(model4);
 
 
         ChangeListener listener = e -> {
@@ -309,39 +310,46 @@ public class Launcher extends Canvas {
                         new Vector4(Float.parseFloat(spinXtransLight.getValue().toString()), Float.parseFloat(spinYtransLight.getValue().toString()), Float.parseFloat(spinZtransLight.getValue().toString())));
                 int k = 0;
                 for (int j = 0; j < i; j++) {
-                    System.out.println("objects.get(j).type == \"Точечный источник\"");
                     if ("Точечный источник".equals(complexObjectList.get(j).type)) k++;
                 }
                 lightSources.get(k).setLightPosition(complexObjectList.get(i).trans.getPosition());
                 lightSources.get(k).setLightIntensive(Float.parseFloat(spinIntenceLight.getValue().toString()));
             }
             if (js == spinXtrans || js == spinYtrans || js == spinZtrans) {
-                complexObjectList.get(i).trans = complexObjectList.get(i).trans.setPos(
-                        new Vector4(Float.parseFloat(spinXtrans.getValue().toString()), Float.parseFloat(spinYtrans.getValue().toString()), Float.parseFloat(spinZtrans.getValue().toString())));
+                complexObjectList.get(i).trans = complexObjectList.get(i)
+                        .trans.setPos(
+                                new Vector4(Float.parseFloat(spinXtrans.getValue().toString()),
+                                        Float.parseFloat(spinYtrans.getValue().toString()),
+                                        Float.parseFloat(spinZtrans.getValue().toString())));
             }
             if (js == spinXrot || js == spinYrot || js == spinZrot) {
-                complexObjectList.get(i).trans = complexObjectList.get(i).trans.rotateFromNull(
-                        Float.parseFloat(spinXrot.getValue().toString()), Float.parseFloat(spinYrot.getValue().toString()), Float.parseFloat(spinZrot.getValue().toString()));
+                complexObjectList.get(i).trans = complexObjectList.get(i)
+                        .trans.rotateFromNull(
+                                Float.parseFloat(spinXrot.getValue().toString()),
+                                Float.parseFloat(spinYrot.getValue().toString()),
+                                Float.parseFloat(spinZrot.getValue().toString()));
 
             }
             if (js == spinXscale || js == spinYscale || js == spinZscale) {
                 complexObjectList.get(i).trans = complexObjectList.get(i).trans.setScale(
-                        new Vector4(Float.parseFloat(spinXscale.getValue().toString()), Float.parseFloat(spinYscale.getValue().toString()), Float.parseFloat(spinZscale.getValue().toString())));
+                        new Vector4(Float.parseFloat(spinXscale.getValue().toString()),
+                                Float.parseFloat(spinYscale.getValue().toString()),
+                                Float.parseFloat(spinZscale.getValue().toString())));
             }
-            if (js == spinRefl || js == spinRefr || js == spinOpacity || js == spinSpecular) {
-                if (complexObjectList.get(i).texPaint) {
-                    complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
-                    complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
-                    complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
-                    complexObjectList.get(i).texture.specular = Float.parseFloat(spinSpecular.getValue().toString());
-
-                } else {
-                    complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
-                    complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
-                    complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
-                    complexObjectList.get(i).color.specular = Float.parseFloat(spinSpecular.getValue().toString());
-                }
-            }
+//            if (js == spinRefl || js == spinRefr || js == spinOpacity || js == spinSpecular) {
+//                if (complexObjectList.get(i).texPaint) {
+//                    complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
+//                    complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
+//                    complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
+//                    complexObjectList.get(i).texture.specular = Float.parseFloat(spinSpecular.getValue().toString());
+//
+//                } else {
+//                    complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
+//                    complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
+//                    complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
+//                    complexObjectList.get(i).color.specular = Float.parseFloat(spinSpecular.getValue().toString());
+//                }
+//            }
 
             update();
         };
@@ -363,10 +371,10 @@ public class Launcher extends Canvas {
         spinZscale.addChangeListener(listener);
         spinAmbient.addChangeListener(listener);
 
-        spinRefl.addChangeListener(listener);
-        spinRefr.addChangeListener(listener);
-        spinOpacity.addChangeListener(listener);
-        spinSpecular.addChangeListener(listener);
+//        spinRefl.addChangeListener(listener);
+//        spinRefr.addChangeListener(listener);
+//        spinOpacity.addChangeListener(listener);
+//        spinSpecular.addChangeListener(listener);
 
         JPanel panelProperty = new JPanel(null);
         panelProperty.add(spinXtrans);
@@ -378,10 +386,10 @@ public class Launcher extends Canvas {
         panelProperty.add(spinZrot);
 
 
-        panelProperty.add(spinRefl);
-        panelProperty.add(spinRefr);
-        panelProperty.add(spinOpacity);
-        panelProperty.add(spinSpecular);
+//        panelProperty.add(spinRefl);
+//        panelProperty.add(spinRefr);
+//        panelProperty.add(spinOpacity);
+//        panelProperty.add(spinSpecular);
 
         panelProperty.add(spinXscale);
         panelProperty.add(spinYscale);
@@ -395,10 +403,10 @@ public class Launcher extends Canvas {
         panelProperty.add(LabelY);
         panelProperty.add(LabelZ);
 
-        panelProperty.add(labelRefl);
-        panelProperty.add(labelRefr);
-        panelProperty.add(labelOpacity);
-        panelProperty.add(labelSpecular);
+//        panelProperty.add(labelRefl);
+//        panelProperty.add(labelRefr);
+//        panelProperty.add(labelOpacity);
+//        panelProperty.add(labelSpecular);
         panelProperty.add(addСolButton);
 
         panelProperty.add(addTexButton);
@@ -456,7 +464,6 @@ public class Launcher extends Canvas {
         ActionListener sliceActionListener;
         sliceActionListener = actionEvent -> {
             AbstractButton aButton = (AbstractButton) actionEvent.getSource();
-            System.out.println("aButton.getText() == \"Цвет:\"");
             if ("Цвет:".equals(aButton.getText())) {
                 addTexButton.setEnabled(false);
                 addСolButton.setEnabled(true);
@@ -467,12 +474,11 @@ public class Launcher extends Canvas {
                 //System.out.println(cur_color.getRed());
                 complexObjectList.get(i).color = new ColorCG(curColor.getRed() / 255.f, curColor.getGreen() / 255.f, curColor.getBlue() / 255.f, 0, 0, 0, 0);
                 complexObjectList.get(i).texPaint = false;
-                complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
-                complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
-                complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
+//                complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
+//                complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
+//                complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
 
             }
-            System.out.println("aButton.getText() == \"Текстура:\"");
             if ("Текстура:".equals(aButton.getText())) {
                 addTexButton.setEnabled(true);
                 addСolButton.setEnabled(false);
@@ -481,9 +487,9 @@ public class Launcher extends Canvas {
                     return;
                 complexObjectList.get(i).texture = curTexture;
                 complexObjectList.get(i).texPaint = true;
-                complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
-                complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
-                complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
+//                complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
+//                complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
+//                complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
                 //objects.get(i).color = null;
             }
             System.out.println("aButton.getText() == \"1 пиксель\"");
@@ -512,8 +518,8 @@ public class Launcher extends Canvas {
                 if (!fname.endsWith(".png") && !fname.endsWith(".jpg") && !fname.endsWith(".jpeg")) {
                     return;
                 }
-                imageTexture.UploadImage(file);
-                imageTexture.repaint();
+//                imageTexture.UploadImage(file);
+//                imageTexture.repaint();
                 try {
                     curTexture = new ImageCG(file, 0, 0, 0, 0);
                     int i = objectListPanel.getSelectedRow();
@@ -521,9 +527,9 @@ public class Launcher extends Canvas {
                         return;
                     complexObjectList.get(i).texture = curTexture;
                     complexObjectList.get(i).color = null;
-                    complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
-                    complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
-                    complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
+//                    complexObjectList.get(i).texture.opacity = Float.parseFloat(spinOpacity.getValue().toString());
+//                    complexObjectList.get(i).texture.refl = Float.parseFloat(spinRefl.getValue().toString());
+//                    complexObjectList.get(i).texture.refr = Float.parseFloat(spinRefr.getValue().toString());
                 } catch (IOException ex) {
                     Logger.getLogger(Launcher.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -531,16 +537,16 @@ public class Launcher extends Canvas {
             update();
         });
 
-        imageTexture = new ImageJPanel(60, 60);
-        panelProperty.add(imageTexture);
-        try {
-            imageTexture.UploadImage(f);
-            imageTexture.repaint();
-            ImageCG texture = new ImageCG(f, 0, 0, 0, 0);
-        } catch (IOException ignored) {
-        }
-        imageTexture.setBounds(100 + panelProperty.getInsets().left, 130 + panelProperty.getInsets().top,
-                60, 60);
+//        imageTexture = new ImageJPanel(60, 60);
+//        panelProperty.add(imageTexture);
+//        try {
+//            imageTexture.UploadImage(f);
+//            imageTexture.repaint();
+//            ImageCG texture = new ImageCG(f, 0, 0, 0, 0);
+//        } catch (IOException ignored) {
+//        }
+//        imageTexture.setBounds(100 + panelProperty.getInsets().left, 130 + panelProperty.getInsets().top,
+//                60, 60);
         radColor.setBounds(0 + panelProperty.getInsets().left, 190 + panelProperty.getInsets().top,
                 60, 25);
         addСolButton.setBounds(0 + panelProperty.getInsets().left, 218 + panelProperty.getInsets().top,
@@ -548,24 +554,24 @@ public class Launcher extends Canvas {
         addСolButton.setBackground(curColor);
 
         int sub = 20;
-        spinRefl.setBounds(0 + panelProperty.getInsets().left, 300 - sub + panelProperty.getInsets().top,
-                65, 25);
-        spinRefr.setBounds(95 + panelProperty.getInsets().left, 300 - sub + panelProperty.getInsets().top,
-                65, 25);
-        spinOpacity.setBounds(0 + panelProperty.getInsets().left, 350 - sub + panelProperty.getInsets().top,
-                65, 25);
+//        spinRefl.setBounds(0 + panelProperty.getInsets().left, 300 - sub + panelProperty.getInsets().top,
+//                65, 25);
+//        spinRefr.setBounds(95 + panelProperty.getInsets().left, 300 - sub + panelProperty.getInsets().top,
+//                65, 25);
+//        spinOpacity.setBounds(0 + panelProperty.getInsets().left, 350 - sub + panelProperty.getInsets().top,
+//                65, 25);
+//
+//        spinSpecular.setBounds(95 + panelProperty.getInsets().left, 350 - sub + panelProperty.getInsets().top,
+//                65, 25);
 
-        spinSpecular.setBounds(95 + panelProperty.getInsets().left, 350 - sub + panelProperty.getInsets().top,
-                65, 25);
-
-        labelRefl.setBounds(0 + panelProperty.getInsets().left, 280 - sub + panelProperty.getInsets().top,
-                80, 25);
-        labelRefr.setBounds(95 + panelProperty.getInsets().left, 280 - sub + panelProperty.getInsets().top,
-                85, 25);
-        labelOpacity.setBounds(0 + panelProperty.getInsets().left, 325 - sub + panelProperty.getInsets().top,
-                86, 25);
-        labelSpecular.setBounds(95 + panelProperty.getInsets().left, 325 - sub + panelProperty.getInsets().top,
-                86, 25);
+//        labelRefl.setBounds(0 + panelProperty.getInsets().left, 280 - sub + panelProperty.getInsets().top,
+//                80, 25);
+//        labelRefr.setBounds(95 + panelProperty.getInsets().left, 280 - sub + panelProperty.getInsets().top,
+//                85, 25);
+//        labelOpacity.setBounds(0 + panelProperty.getInsets().left, 325 - sub + panelProperty.getInsets().top,
+//                86, 25);
+//        labelSpecular.setBounds(95 + panelProperty.getInsets().left, 325 - sub + panelProperty.getInsets().top,
+//                86, 25);
 
         addСolButton.addActionListener(e -> {
             Color get_color = JColorChooser.showDialog(null, "Choose", Color.RED);
@@ -579,10 +585,10 @@ public class Launcher extends Canvas {
 
             complexObjectList.get(i).color = new ColorCG(curColor.getRed() / 255.f, curColor.getGreen() / 255.f, curColor.getBlue() / 255.f, 0, 0, 0, 0);
             complexObjectList.get(i).texPaint = false;
-            complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
-            complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
-            complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
-            complexObjectList.get(i).color.specular = Float.parseFloat(spinSpecular.getValue().toString());
+//            complexObjectList.get(i).color.opacity = Float.parseFloat(spinOpacity.getValue().toString());
+//            complexObjectList.get(i).color.special = Float.parseFloat(spinRefl.getValue().toString());
+//            complexObjectList.get(i).color.reflectionCoefficient = Float.parseFloat(spinRefr.getValue().toString());
+//            complexObjectList.get(i).color.specular = Float.parseFloat(spinSpecular.getValue().toString());
             update();
         });
 
@@ -649,7 +655,6 @@ public class Launcher extends Canvas {
             int i = objectListPanel.getSelectedRow();
             if (i > -1) {
                 activeSpinnerListener = false;
-                System.out.println("objects.get(j).type == \"Точечный источник\" 2");
                 if (!complexObjectList.get(i).type.equals("Точечный источник")) {
                     mFrame.remove(panel_property_light);
                     mFrame.add(panelProperty);
@@ -672,16 +677,16 @@ public class Launcher extends Canvas {
                         radColor.setSelected(true);
                         curColor = new Color(complexObjectList.get(i).color.red, complexObjectList.get(i).color.green, complexObjectList.get(i).color.blue);
                         addСolButton.setBackground(curColor);
-                        spinRefl.setValue(complexObjectList.get(i).color.special);
-                        spinRefr.setValue(complexObjectList.get(i).color.reflectionCoefficient);
-                        spinOpacity.setValue(complexObjectList.get(i).color.opacity);
-                        spinSpecular.setValue(complexObjectList.get(i).color.specular);
+//                        spinRefl.setValue(complexObjectList.get(i).color.special);
+//                        spinRefr.setValue(complexObjectList.get(i).color.reflectionCoefficient);
+//                        spinOpacity.setValue(complexObjectList.get(i).color.opacity);
+//                        spinSpecular.setValue(complexObjectList.get(i).color.specular);
                     } else {
                         radTexture.setSelected(true);
-                        spinRefl.setValue(complexObjectList.get(i).texture.refl);
-                        spinRefr.setValue(complexObjectList.get(i).texture.refr);
-                        spinOpacity.setValue(complexObjectList.get(i).texture.opacity);
-                        spinSpecular.setValue(complexObjectList.get(i).texture.specular);
+//                        spinRefl.setValue(complexObjectList.get(i).texture.refl);
+//                        spinRefr.setValue(complexObjectList.get(i).texture.refr);
+//                        spinOpacity.setValue(complexObjectList.get(i).texture.opacity);
+//                        spinSpecular.setValue(complexObjectList.get(i).texture.specular);
                     }
                 } else {
                     mFrame.remove(panelProperty);
@@ -693,7 +698,6 @@ public class Launcher extends Canvas {
                     spinZtransLight.setValue((int) complexObjectList.get(i).trans.getPosition().getZ());
                     int k = 0;
                     for (int j = 0; j < i; j++) {
-                        System.out.println("objects.get(j).type == \"Точечный источник\" 3");
                         if ("Точечный источник".equals(complexObjectList.get(j).type)) k++;
                     }
                     lightColor = new Color(lightSources.get(k).getLightColor().red, lightSources.get(k).getLightColor().green, lightSources.get(k).getLightColor().blue);
@@ -707,18 +711,18 @@ public class Launcher extends Canvas {
 
         // -----------
 
-        antiAliasing1 = new JRadioButton("1 пиксель");
-        antiAliasing2 = new JRadioButton("2 пикселя");
-        antiAliasing3 = new JRadioButton("3 пикселей");
+//        antiAliasing1 = new JRadioButton("1 пиксель");
+//        antiAliasing2 = new JRadioButton("2 пикселя");
+//        antiAliasing3 = new JRadioButton("3 пикселей");
         antiAliasingValue = 1;
         ButtonGroup group2 = new ButtonGroup();
-        group2.add(antiAliasing1);
-        group2.add(antiAliasing2);
-        group2.add(antiAliasing3);
-        antiAliasing1.setSelected(true);
-        antiAliasing1.addActionListener(sliceActionListener);
-        antiAliasing2.addActionListener(sliceActionListener);
-        antiAliasing3.addActionListener(sliceActionListener);
+//        group2.add(antiAliasing1);
+//        group2.add(antiAliasing2);
+//        group2.add(antiAliasing3);
+//        antiAliasing1.setSelected(true);
+//        antiAliasing1.addActionListener(sliceActionListener);
+//        antiAliasing2.addActionListener(sliceActionListener);
+//        antiAliasing3.addActionListener(sliceActionListener);
 
         mFrame.add(panel);
         mFrame.add(renderButton);
@@ -730,13 +734,13 @@ public class Launcher extends Canvas {
         mFrame.add(LabelObjects);
         mFrame.add(addButton);
         mFrame.add(deleteButton);
-        mFrame.add(LabelAnti);
+//        mFrame.add(LabelAnti);
         mFrame.add(loadButton);
         mFrame.add(lightсombobox);
         mFrame.add(addLightButton);
-        mFrame.add(antiAliasing1);
-        mFrame.add(antiAliasing2);
-        mFrame.add(antiAliasing3);
+//        mFrame.add(antiAliasing1);
+//        mFrame.add(antiAliasing2);
+//        mFrame.add(antiAliasing3);
         mFrame.add(LabelLoad);
         mFrame.add(spinAmbient);
         mFrame.add(LabelAmbient);
@@ -790,7 +794,6 @@ public class Launcher extends Canvas {
                 150, 30);
 
         addLightButton.addActionListener(e -> {
-            System.out.println("addLightButton actionPerformed called");
             addNewObject("Точечный источник", resourcePath + "icosphere.obj", new Vector4(0, 6, 0, 1),
                     new Vector4(0.1f, 0.1f, 0.1f, 1), new ColorCG(1.0f, 1.0f, 1.f, 0, 0, 0, 0));
             Light scene_light = new Light(new Vector4(0, 6, 0), new ColorCG(1, 1, 1, 0, 0, 0, 0), 1);
@@ -798,14 +801,14 @@ public class Launcher extends Canvas {
             update();
         });
         ///////
-        LabelAnti.setBounds(left_borger + insets.left, 290 + insets.top,
-                150, 20);
-        antiAliasing1.setBounds(left_borger + insets.left, 310 + insets.top,
-                150, 20);
-        antiAliasing2.setBounds(left_borger + insets.left, 330 + insets.top,
-                150, 20);
-        antiAliasing3.setBounds(left_borger + insets.left, 350 + insets.top,
-                150, 20);
+//        LabelAnti.setBounds(left_borger + insets.left, 290 + insets.top,
+//                150, 20);
+//        antiAliasing1.setBounds(left_borger + insets.left, 310 + insets.top,
+//                150, 20);
+//        antiAliasing2.setBounds(left_borger + insets.left, 330 + insets.top,
+//                150, 20);
+//        antiAliasing3.setBounds(left_borger + insets.left, 350 + insets.top,
+//                150, 20);
         LabelAmbient.setBounds(left_borger + insets.left, 380 + insets.top,
                 150, 20);
         spinAmbient.setBounds(left_borger + insets.left, 400 + insets.top,
@@ -817,7 +820,6 @@ public class Launcher extends Canvas {
         // right part
         int left_botder2 = 1000;
         loadButton.addActionListener(e -> {
-            System.out.println("loadButton actionPerformed called");
             FileNameExtensionFilter filter = new FileNameExtensionFilter(
                     "OBJ", "obj");
             JFileChooser fileopen = new JFileChooser();
@@ -891,7 +893,6 @@ public class Launcher extends Canvas {
 
     @Override
     public void paint(Graphics g) {
-        System.out.println("paint called");
 //            counter++;
 //               setBackground(Color.WHITE);
 //            g.fillOval(130 + counter, 130 + counter,50, 60);
@@ -904,7 +905,7 @@ public class Launcher extends Canvas {
     public void drawObjects(RenderSceneTriangle target, Matrix vp, List<ComplexObject> objects, List<Source> lights) throws IOException {
 //            System.out.println("drawObjects called");
 //        System.out.println("VP is " + vp.toString());
-        boolean erasePhantoms = false; // is phantom was chosen @see RenderChosenObjectException
+        boolean erasePhantoms = false; // if phantom was chosen @see RenderChosenObjectException
         for (ComplexObject object : objects) {
             try {
                 object.draw(target, vp, lights);
@@ -913,7 +914,9 @@ public class Launcher extends Canvas {
                 tableModel.addRow(new String[]{name});
                 object.setPhantom(false);
                 erasePhantoms = true;
+                redrawAfterPhantomChoice = true;
                 phantomChooseMode = false;
+                mouseClickedOnPhantomMode = false;
             }
         }
         if (erasePhantoms)
@@ -1024,9 +1027,12 @@ public class Launcher extends Canvas {
 
     private void update() {
         System.out.println("workPerforming " + workPerforming);
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        int triangles = complexObjectList.stream()
+                .mapToInt(o -> o.getIndexes().size())
+                .sum() / 3;
+        long previousTime = bean.getCurrentThreadCpuTime();
         if (workPerforming == 1) {
-            long previousTime = System.nanoTime();
-            long currentTime = System.nanoTime();
 //            float deltaCam = (float) ((currentTime - previousTime) / 1000000000.0);
 //            previousTime = currentTime;
 
@@ -1039,6 +1045,9 @@ public class Launcher extends Canvas {
             lightSourcesWork.get(0).setLightPosition(camera.getCameraDirection().negative());
             try {
                 drawObjects(target, camera.getViewProjection(), complexObjectList, lightSourcesWork);
+
+                long currentTime = bean.getCurrentThreadCpuTime();
+                System.out.println("Triangles processed " + triangles + " in " + (currentTime - previousTime) / 1_000_000 + " ms");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1059,6 +1068,13 @@ public class Launcher extends Canvas {
             rayTracing.renderRayTracing(target, width, height, camera, sceneObjects, lightSources, ambient, antiAliasingValue);
 
             swapBuffers();
+            long currentTime = bean.getCurrentThreadCpuTime();
+            System.out.println("Triangles processed (with ray tracing) " + triangles + " in " + (currentTime - previousTime) / 1_000_000 + " ms");
+        }
+
+        if (redrawAfterPhantomChoice) {
+            redrawAfterPhantomChoice = false;
+            update();
         }
 
 
@@ -1139,7 +1155,6 @@ public class Launcher extends Canvas {
     public class RenderRayTracingListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println("Кнопка робит " + workPerforming);
             if (workPerforming == 1) {
                 workPerforming = 2;
             } else {
@@ -1164,7 +1179,9 @@ public class Launcher extends Canvas {
                 }
                 lightSources.remove(k);
             }
-            complexObjectList.remove(i);
+            ComplexObject objectToRemove = complexObjectList.remove(i);
+            objectToRemove.getParent().getConnections()
+                    .remove(objectToRemove.getParentConnectionType());
 
             update();
         }
@@ -1187,6 +1204,8 @@ public class Launcher extends Canvas {
                 } else {
                     System.out.println("Not alone");
                     phantomChooseMode = true;
+                    mouseX = Integer.MAX_VALUE;
+                    mouseY = Integer.MAX_VALUE;
 
                     complexObjectList.addAll(complexObjectList.stream()
                             .map((o) -> {
@@ -1194,6 +1213,8 @@ public class Launcher extends Canvas {
                                         o.getTrans(),
                                         str,
                                         new ColorCG(1.0f, 1.0f, 1.0f));
+                                phantomReference.setShiftedVertexes(o.extractMinimalCoordinatesVector()
+                                        .substitute(phantomReference.extractMinimalCoordinatesVector()));
                                 return o.createAvailablePhantoms(phantomReference);
                             })
                             .reduce(new ArrayList<>(), (accumulator, target) -> {
@@ -1207,46 +1228,46 @@ public class Launcher extends Canvas {
     }
 }
 
-
-class ImageJPanel extends JPanel {
-
-    public int width, height;
-    private Image image;
-    private File filename;
-
-    public ImageJPanel(int wid, int heig) {
-        this.setSize(wid, heig);
-        try {
-
-            width = wid;
-            height = heig;
-            image = ImageIO.read(new File("/home/flame/Documents/comp-graphics-course-project/src/main/resources/bricks.jpg"));
-
-        } catch (IOException exception) {
-            System.out.println("error no image");
-        }
-    }
-
-    public void UploadImage(File f) {
-        filename = f;
-        try {
-
-            Image newImage = ImageIO.read(filename);
-            if (newImage == null)
-                return;
-            image = newImage;
-            image = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        } catch (IOException exception) {
-            System.out.println("error no image");
-        }
-
-
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(image, 0, 0, this);
-    }
-
-}
+//
+//class ImageJPanel extends JPanel {
+//
+//    public int width, height;
+//    private Image image;
+//    private File filename;
+//
+//    public ImageJPanel(int wid, int heig) {
+//        this.setSize(wid, heig);
+//        try {
+//
+//            width = wid;
+//            height = heig;
+//            image = ImageIO.read(new File("/Users/admin/Documents/cgcourse/src/main/resources/bricks.jpg"));
+//
+//        } catch (IOException exception) {
+//            System.out.println("error no image");
+//        }
+//    }
+//
+//    public void UploadImage(File f) {
+//        filename = f;
+//        try {
+//
+//            Image newImage = ImageIO.read(filename);
+//            if (newImage == null)
+//                return;
+//            image = newImage;
+//            image = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+//        } catch (IOException exception) {
+//            System.out.println("error no image");
+//        }
+//
+//
+//    }
+//
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        g.drawImage(image, 0, 0, this);
+//    }
+//
+//}

@@ -62,7 +62,7 @@ public class Vector4 {
     }
 
     public Vector4 rotate(Quaternion rotation) {
-        Quaternion w = rotation.Mul(this).Mul(rotation.Negative());
+        Quaternion w = rotation.mul(this).mul(rotation.Negative());
 
         return new Vector4(w.getX(), w.getY(), w.getZ(), 1.0f);
     }

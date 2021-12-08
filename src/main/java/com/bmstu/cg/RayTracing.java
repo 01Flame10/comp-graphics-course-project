@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RayTracing {
-    private static int NearestObjectIndex(ArrayList<Float> intersections) {
+    private static int nearestObjectIndex(ArrayList<Float> intersections) {
         int index_of_minimum_value = -1;
         if (intersections.isEmpty()) {
             return -1;
@@ -52,38 +52,38 @@ public class RayTracing {
     }
 
 
-    private static ColorCG getColor(Vector4 intersection_position, Vector4 intersecting_ray_direction, List<PrimitiveObject> scene_objects, int index_of_nearest_object, int index_of_first_object, List<Source> light_sources, float accuracy, float ambientlight, int recur_deep) {
-        ColorCG nearest_object_color = scene_objects.get(index_of_nearest_object).getColor(intersection_position);
-        Vector4 nearest_object_normal = scene_objects.get(index_of_nearest_object).getNormalAt(intersection_position).normalized();
+    private static ColorCG getColor(Vector4 intersectionPosition, Vector4 intersecting_ray_direction, List<PrimitiveObject> sceneObjects, int indexOfNearestObject, int indexOfFirstObject, List<Source> lightSources, float accuracy, float ambientlight, int recur_deep) {
+        ColorCG nearestObjectColor = sceneObjects.get(indexOfNearestObject).getColor(intersectionPosition);
+        Vector4 nearestObjectNormal = sceneObjects.get(indexOfNearestObject).getNormalAt(intersectionPosition).normalized();
 
 
-        ColorCG final_color = nearest_object_color.colorMul(ambientlight);
+        ColorCG finalColor = nearestObjectColor.colorMul(ambientlight);
 
         if (recur_deep > 500)
             System.out.println(recur_deep);
 
         // тени
-        for (int light_index = 0; light_index < light_sources.size(); light_index++) {
-            Vector4 light_direction = light_sources.get(light_index).getLightPosition().substitute(intersection_position).normalized();
+        for (int lightIndex = 0; lightIndex < lightSources.size(); lightIndex++) {
+            Vector4 lightDirection = lightSources.get(lightIndex).getLightPosition().substitute(intersectionPosition).normalized();
 
-            float cosine_angle = nearest_object_normal.dot3(light_direction);
+            float cosineAngle = nearestObjectNormal.dot3(lightDirection);
 
-            if (cosine_angle > 0) {
+            if (cosineAngle > 0) {
                 boolean shadowed = false;
 
-                Vector4 distance_to_light = light_sources.get(light_index).getLightPosition().substitute(intersection_position);
-                float distance_to_light_magnitude = distance_to_light.length3();
-                Vector4 distance_to_light_norm = distance_to_light.normalized();
-                Ray shadow_ray = new Ray(intersection_position, distance_to_light_norm);
-                List<Float> secondary_intersections = new ArrayList();
+                Vector4 distanceToLight = lightSources.get(lightIndex).getLightPosition().substitute(intersectionPosition);
+                float distanceToLightMagnitude = distanceToLight.length3();
+                Vector4 distanceToLightNorm = distanceToLight.normalized();
+                Ray shadowRay = new Ray(intersectionPosition, distanceToLightNorm);
+                List<Float> secondaryIntersections = new ArrayList();
 
-                for (int object_index = 0; object_index < scene_objects.size() && shadowed == false; object_index++) {
-                    secondary_intersections.add(scene_objects.get(object_index).findIntersection(shadow_ray));
+                for (int objectIndex = 0; objectIndex < sceneObjects.size() && shadowed == false; objectIndex++) {
+                    secondaryIntersections.add(sceneObjects.get(objectIndex).findIntersection(shadowRay));
                 }
 
-                for (int c = 0; c < secondary_intersections.size(); c++) {
-                    if (secondary_intersections.get(c) > 0.01f) {
-                        if (secondary_intersections.get(c) <= distance_to_light_magnitude) {
+                for (int c = 0; c < secondaryIntersections.size(); c++) {
+                    if (secondaryIntersections.get(c) > 0.01f) {
+                        if (secondaryIntersections.get(c) <= distanceToLightMagnitude) {
 
                             shadowed = true;
                         }
@@ -91,17 +91,17 @@ public class RayTracing {
                     }
                 }
                 if (shadowed == false) {
-                    float intensive_cos = cosine_angle * light_sources.get(light_index).getLightIntensive() / (nearest_object_normal.length3() * light_direction.length3());
-                    final_color = final_color.colorAdd(nearest_object_color.colorMul(light_sources.get(light_index).getLightColor()).colorMul(intensive_cos));
+                    float intensiveCos = cosineAngle * lightSources.get(lightIndex).getLightIntensive() / (nearestObjectNormal.length3() * lightDirection.length3());
+                    finalColor = finalColor.colorAdd(nearestObjectColor.colorMul(lightSources.get(lightIndex).getLightColor()).colorMul(intensiveCos));
                     // Находим отраженный луч 
-                    if (nearest_object_color.specular > 0) {
-                        Vector4 scalar1 = nearest_object_normal.multiply(cosine_angle).multiply(2);
-                        Vector4 reflection_direction = scalar1.substitute(light_direction).normalized();
-                        float specular = reflection_direction.dot3(intersecting_ray_direction.negative());
+                    if (nearestObjectColor.specular > 0) {
+                        Vector4 scalar1 = nearestObjectNormal.multiply(cosineAngle).multiply(2);
+                        Vector4 reflectionDirection = scalar1.substitute(lightDirection).normalized();
+                        float specular = reflectionDirection.dot3(intersecting_ray_direction.negative());
                         if (specular > 0.1) {
-                            float specular_object = nearest_object_color.specular * 100;
+                            float specular_object = nearestObjectColor.specular * 100;
                             specular = (float) Math.pow(specular, specular_object);
-                            final_color = final_color.colorAdd(light_sources.get(light_index).getLightColor().colorMul(0.5f * specular * light_sources.get(light_index).getLightIntensive()));
+                            finalColor = finalColor.colorAdd(lightSources.get(lightIndex).getLightColor().colorMul(0.5f * specular * lightSources.get(lightIndex).getLightIntensive()));
                         }
 
                     }
@@ -110,68 +110,68 @@ public class RayTracing {
         }
 
         // отражение
-        if (nearest_object_color.getSpecial() > 0 && nearest_object_color.getSpecial() <= 1) {
-            Vector4 reflection_direction = ReflectVector(intersecting_ray_direction, nearest_object_normal);
-            Ray reflection_ray = new Ray(intersection_position, reflection_direction);
-            ArrayList<Float> reflection_intersections = new ArrayList();
+        if (nearestObjectColor.getSpecial() > 0 && nearestObjectColor.getSpecial() <= 1) {
+            Vector4 reflection_direction = ReflectVector(intersecting_ray_direction, nearestObjectNormal);
+            Ray reflection_ray = new Ray(intersectionPosition, reflection_direction);
+            ArrayList<Float> reflectionIntersections = new ArrayList();
 
-            for (int reflection_index = 0; reflection_index < scene_objects.size(); reflection_index++) {
-                reflection_intersections.add(scene_objects.get(reflection_index).findIntersection(reflection_ray));
+            for (int reflection_index = 0; reflection_index < sceneObjects.size(); reflection_index++) {
+                reflectionIntersections.add(sceneObjects.get(reflection_index).findIntersection(reflection_ray));
             }
 
 
-            int index_of_nearest_object_with_reflection = NearestObjectIndex(reflection_intersections);
-            if (index_of_nearest_object_with_reflection != -1 && recur_deep < 10) {
-                if (reflection_intersections.get(index_of_nearest_object_with_reflection) > 0.01) {
-                    Vector4 reflection_intersection_position = intersection_position.add(reflection_direction.multiply(reflection_intersections.get(index_of_nearest_object_with_reflection)));
-                    Vector4 reflection_intersection_ray_direction = reflection_direction;
+            int indexOfNearestObjectWithReflection = nearestObjectIndex(reflectionIntersections);
+            if (indexOfNearestObjectWithReflection != -1 && recur_deep < 10) {
+                if (reflectionIntersections.get(indexOfNearestObjectWithReflection) > 0.01) {
+                    Vector4 reflectionIntersectionPosition = intersectionPosition.add(reflection_direction.multiply(reflectionIntersections.get(indexOfNearestObjectWithReflection)));
+                    Vector4 reflectionIntersectionRayDirection = reflection_direction;
 
-                    ColorCG reflection_intersection_color = getColor(reflection_intersection_position, reflection_intersection_ray_direction, scene_objects, index_of_nearest_object_with_reflection, index_of_nearest_object_with_reflection, light_sources, 0.0001f, ambientlight, ++recur_deep);
+                    ColorCG reflectionIntersectionColor = getColor(reflectionIntersectionPosition, reflectionIntersectionRayDirection, sceneObjects, indexOfNearestObjectWithReflection, indexOfNearestObjectWithReflection, lightSources, 0.0001f, ambientlight, ++recur_deep);
 
-                    final_color = final_color.colorMul(1 - final_color.getSpecial()).colorAdd(reflection_intersection_color.colorMul(nearest_object_color.getSpecial()));
+                    finalColor = finalColor.colorMul(1 - finalColor.getSpecial()).colorAdd(reflectionIntersectionColor.colorMul(nearestObjectColor.getSpecial()));
                 }
             }
         }
 
 
         // преломление
-        if (nearest_object_color.getReflectionCoefficient() > 0) {
-            Vector4 refraction_direction = RefractVector(intersecting_ray_direction, nearest_object_normal, nearest_object_color.getReflectionCoefficient());
-            if (refraction_direction != null) {
+        if (nearestObjectColor.getReflectionCoefficient() > 0) {
+            Vector4 refractionDirection = RefractVector(intersecting_ray_direction, nearestObjectNormal, nearestObjectColor.getReflectionCoefficient());
+            if (refractionDirection != null) {
 
-                Ray refraction_ray = new Ray(intersection_position, refraction_direction);
-                ArrayList<Float> refraction_intersections = new ArrayList();
+                Ray refraction_ray = new Ray(intersectionPosition, refractionDirection);
+                ArrayList<Float> refractionIntersections = new ArrayList();
 
 
-                for (int refraction_index = 0; refraction_index < scene_objects.size(); refraction_index++) {
-                    if (refraction_index != index_of_first_object) {
-                        refraction_intersections.add(scene_objects.get(refraction_index).findIntersection(refraction_ray));
+                for (int refractionIndex = 0; refractionIndex < sceneObjects.size(); refractionIndex++) {
+                    if (refractionIndex != indexOfFirstObject) {
+                        refractionIntersections.add(sceneObjects.get(refractionIndex).findIntersection(refraction_ray));
 
                     } else {
-                        refraction_intersections.add(-1.f);
+                        refractionIntersections.add(-1.f);
                     }
 
                 }
-                int index_of_nearest_object_with_refraction = NearestObjectIndex(refraction_intersections);
-                if (index_of_nearest_object_with_refraction != -1 && recur_deep < 10) {
-                    if (refraction_intersections.get(index_of_nearest_object_with_refraction) > 0.1) {
+                int indexOfNearestObjectWithRefraction = nearestObjectIndex(refractionIntersections);
+                if (indexOfNearestObjectWithRefraction != -1 && recur_deep < 10) {
+                    if (refractionIntersections.get(indexOfNearestObjectWithRefraction) > 0.1) {
 
-                        Vector4 refraction_intersection_position = intersection_position.add(refraction_direction.multiply(refraction_intersections.get(index_of_nearest_object_with_refraction)));
-                        Vector4 refraction_intersection_ray_direction = refraction_direction;
+                        Vector4 refractionIntersectionPosition = intersectionPosition.add(refractionDirection.multiply(refractionIntersections.get(indexOfNearestObjectWithRefraction)));
+                        Vector4 refractionIntersectionRayDirection = refractionDirection;
 
-                        ColorCG refraction_intersection_color = getColor(refraction_intersection_position, refraction_intersection_ray_direction, scene_objects, index_of_nearest_object_with_refraction, index_of_nearest_object_with_refraction, light_sources, 0.0001f, ambientlight, ++recur_deep);
+                        ColorCG refractionIntersectionColor = getColor(refractionIntersectionPosition, refractionIntersectionRayDirection, sceneObjects, indexOfNearestObjectWithRefraction, indexOfNearestObjectWithRefraction, lightSources, 0.0001f, ambientlight, ++recur_deep);
 
-                        final_color = final_color.colorMul(1 - nearest_object_color.opacity).colorAdd(refraction_intersection_color.colorMul(nearest_object_color.opacity));
+                        finalColor = finalColor.colorMul(1 - nearestObjectColor.opacity).colorAdd(refractionIntersectionColor.colorMul(nearestObjectColor.opacity));
                     }
                 }
             }
 
         }
-        return final_color.limit();
+        return finalColor.limit();
     }
 
 
-    private static float[] norm_coords(int x, int y, float increment, int width, int height, float aspectratio) {
+    private static float[] normCoords(int x, int y, float increment, int width, int height, float aspectratio) {
         float xamnt, yamnt;
         //float tanHalfFOV = (float)Math.tan(70.f / 2);
         //return new float[] {x, y};
@@ -195,27 +195,27 @@ public class RayTracing {
                                  Camera camera, List<PrimitiveObject> scene_objects, List<Source> light_sources,
                                  float ambientlight, int aadepth) {
 
-        int thread_number = 16;
-        Thread[] t_arr = new Thread[thread_number];
+        int threadNumber = 16;
+        Thread[] threads = new Thread[threadNumber];
 
-        int num_of_parts = width / thread_number;
-        int num_of_parts_remainder = width % thread_number;
+        int numOfParts = width / threadNumber;
+        int numOfPartsRemainder = width % threadNumber;
 
-        for (int i = 0; i < thread_number - 1; ++i) {
-            int begin = i * num_of_parts;
-            int end = begin + num_of_parts;
-            t_arr[i] = new Thread(new TracingThread(target, width, height, camera, scene_objects, light_sources, ambientlight, aadepth, begin, end));
-            t_arr[i].start();
+        for (int i = 0; i < threadNumber - 1; ++i) {
+            int begin = i * numOfParts;
+            int end = begin + numOfParts;
+            threads[i] = new Thread(new TracingThread(target, width, height, camera, scene_objects, light_sources, ambientlight, aadepth, begin, end));
+            threads[i].start();
         }
-        int begin = (thread_number - 1) * num_of_parts;
-        int end = begin + num_of_parts + num_of_parts_remainder;
-        t_arr[thread_number - 1] = new Thread(new TracingThread(target, width, height, camera, scene_objects, light_sources, ambientlight, aadepth, begin, end));
-        t_arr[thread_number - 1].start();
+        int begin = (threadNumber - 1) * numOfParts;
+        int end = begin + numOfParts + numOfPartsRemainder;
+        threads[threadNumber - 1] = new Thread(new TracingThread(target, width, height, camera, scene_objects, light_sources, ambientlight, aadepth, begin, end));
+        threads[threadNumber - 1].start();
         //long start = System.nanoTime();
 
-        for (int i = 0; i < thread_number; ++i) {
+        for (int i = 0; i < threadNumber; ++i) {
             try {
-                t_arr[i].join();
+                threads[i].join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -230,10 +230,10 @@ public class RayTracing {
         int width;
         int height;
         Camera camera;
-        List<PrimitiveObject> scene_objects;
-        List<Source> light_sources;
+        List<PrimitiveObject> sceneObjects;
+        List<Source> lightSources;
         float ambientlight;
-        int aliasing_koef, begin, end;
+        int aliasingKoef, begin, end;
 
         public TracingThread(RenderSceneTriangle target_v, int width_v, int height_v,
                              Camera camera_v, List<PrimitiveObject> scene_objects_v, List<Source> light_sources_v,
@@ -242,10 +242,10 @@ public class RayTracing {
             width = width_v;
             height = height_v;
             camera = camera_v;
-            scene_objects = scene_objects_v;
-            light_sources = light_sources_v;
+            sceneObjects = scene_objects_v;
+            lightSources = light_sources_v;
             ambientlight = ambientlight_v;
-            aliasing_koef = aadepth_v;
+            aliasingKoef = aadepth_v;
             begin = begin_v;
             end = end_v;
         }
@@ -257,56 +257,53 @@ public class RayTracing {
             Vector4 camdown = camera.getCameraDown();
 
             float aspectratio = (float) width / (float) height;
-            int aliasing_index;
+            int aliasingIndex;
             float xamnt, yamnt;
             float accuracy = 0.001f;
 
             for (int x = begin; x < end; x++) {
                 for (int y = 0; y < height; y++) {
-                    float[] tempRed = new float[aliasing_koef * aliasing_koef];
-                    float[] tempGreen = new float[aliasing_koef * aliasing_koef];
-                    float[] tempBlue = new float[aliasing_koef * aliasing_koef];
+                    float[] tempRed = new float[aliasingKoef * aliasingKoef];
+                    float[] tempGreen = new float[aliasingKoef * aliasingKoef];
+                    float[] tempBlue = new float[aliasingKoef * aliasingKoef];
 
-                    for (int aax = 0; aax < aliasing_koef; aax++) {
+                    for (int aax = 0; aax < aliasingKoef; aax++) {
                         //for (int aay = 0; aay < aliasing_koef; aay++) {
                         int aay = 0;
-                        aliasing_index = aay * aliasing_koef + aax;
+                        aliasingIndex = aay * aliasingKoef + aax;
 
-                        if (aliasing_koef == 1) {
-                            float[] result = norm_coords(x, y, 0.5f, width, height, aspectratio);
+                        if (aliasingKoef == 1) {
+                            float[] result = normCoords(x, y, 0.5f, width, height, aspectratio);
                             xamnt = result[0];
                             yamnt = result[1];
                         } else {
-                            float[] result = norm_coords(x, y, (float) aax / ((float) aliasing_koef), width, height, aspectratio);
+                            float[] result = normCoords(x, y, (float) aax / ((float) aliasingKoef), width, height, aspectratio);
                             xamnt = result[0];
                             yamnt = result[1];
                         }
-                        Vector4 cam_ray_origin = campos;
-                        Vector4 cam_ray_direction = camdir.add(camright.multiply(xamnt - 0.5f).add(camdown.multiply(yamnt - 0.5f))).normalized();
-                        Ray cam_ray = new Ray(cam_ray_origin, cam_ray_direction);
-                        ArrayList<Float> intersections = new ArrayList();
-                        for (int index = 0; index < scene_objects.size(); index++) {
-                            intersections.add(scene_objects.get(index).findIntersection(cam_ray));
+                        Vector4 camRayOrigin = campos;
+                        Vector4 camRayDirection = camdir.add(camright.multiply(xamnt - 0.5f).add(camdown.multiply(yamnt - 0.5f))).normalized();
+                        Ray cam_ray = new Ray(camRayOrigin, camRayDirection);
+                        ArrayList<Float> intersections = new ArrayList<>();
+                        for (PrimitiveObject sceneObject : sceneObjects) {
+                            intersections.add(sceneObject.findIntersection(cam_ray));
                         }
-                        int index_of_nearest_object = NearestObjectIndex(intersections);
-                        if (index_of_nearest_object == -1) {
-                            tempRed[aliasing_index] = 0;
-                            tempGreen[aliasing_index] = 0;
-                            tempBlue[aliasing_index] = 0;
+                        int indexOfNearestObject = nearestObjectIndex(intersections);
+                        if (indexOfNearestObject == -1) {
+                            tempRed[aliasingIndex] = 0;
+                            tempGreen[aliasingIndex] = 0;
+                            tempBlue[aliasingIndex] = 0;
                         } else {
-                            if (intersections.get(index_of_nearest_object) > 0.00001) {
+                            if (intersections.get(indexOfNearestObject) > 0.00001) {
 
-                                Vector4 intersection_position = cam_ray_origin.add(cam_ray_direction.multiply(intersections.get(index_of_nearest_object)));
-                                Vector4 intersecting_ray_direction = cam_ray_direction;
-                                int recur_deep = 0;
+                                Vector4 intersectionPosition = camRayOrigin.add(camRayDirection.multiply(intersections.get(indexOfNearestObject)));
+                                int recurDeep = 0;
 
-                                ColorCG intersection_color = getColor(intersection_position, intersecting_ray_direction, scene_objects, index_of_nearest_object, index_of_nearest_object, light_sources, accuracy, ambientlight, recur_deep);
+                                ColorCG intersectionColor = getColor(intersectionPosition, camRayDirection, sceneObjects, indexOfNearestObject, indexOfNearestObject, lightSources, accuracy, ambientlight, recurDeep);
 
-                                tempRed[aliasing_index] = intersection_color.getRed();
-                                tempGreen[aliasing_index] = intersection_color.getGreen();
-                                tempBlue[aliasing_index] = intersection_color.getBlue();
-
-
+                                tempRed[aliasingIndex] = intersectionColor.getRed();
+                                tempGreen[aliasingIndex] = intersectionColor.getGreen();
+                                tempBlue[aliasingIndex] = intersectionColor.getBlue();
                             }
                         }
                         //}
@@ -315,19 +312,19 @@ public class RayTracing {
                     float totalGreen = 0;
                     float totalBlue = 0;
 
-                    for (int iRed = 0; iRed < aliasing_koef; iRed++) {
+                    for (int iRed = 0; iRed < aliasingKoef; iRed++) {
                         totalRed = totalRed + tempRed[iRed];
                     }
-                    for (int iGreen = 0; iGreen < aliasing_koef; iGreen++) {
+                    for (int iGreen = 0; iGreen < aliasingKoef; iGreen++) {
                         totalGreen = totalGreen + tempGreen[iGreen];
                     }
-                    for (int iBlue = 0; iBlue < aliasing_koef; iBlue++) {
+                    for (int iBlue = 0; iBlue < aliasingKoef; iBlue++) {
                         totalBlue = totalBlue + tempBlue[iBlue];
                     }
 
-                    double avgRed = totalRed / (aliasing_koef);
-                    double avgGreen = totalGreen / (aliasing_koef);
-                    double avgBlue = totalBlue / (aliasing_koef);
+                    double avgRed = totalRed / (aliasingKoef);
+                    double avgGreen = totalGreen / (aliasingKoef);
+                    double avgBlue = totalBlue / (aliasingKoef);
 
                     target.drawPixel(x, y, (byte) 0xFF,
                             (byte) ((int) (avgBlue * 255) & 0xFF),

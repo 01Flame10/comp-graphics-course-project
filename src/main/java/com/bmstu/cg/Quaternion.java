@@ -74,7 +74,7 @@ public class Quaternion {
         return (float) Math.sqrt(xq * xq + yq * yq + zq * zq + wq * wq);
     }
 
-    public Quaternion Normalized() {
+    public Quaternion normalized() {
         float length = Length();
 
         return new Quaternion(xq / length, yq / length, zq / length, wq / length);
@@ -84,11 +84,11 @@ public class Quaternion {
         return new Quaternion(-xq, -yq, -zq, wq);
     }
 
-    public Quaternion Mul(float r) {
+    public Quaternion mul(float r) {
         return new Quaternion(xq * r, yq * r, zq * r, wq * r);
     }
 
-    public Quaternion Mul(Quaternion r) {
+    public Quaternion mul(Quaternion r) {
         float w_ = wq * r.getW() - xq * r.getX() - yq * r.getY() - zq * r.getZ();
         float x_ = xq * r.getW() + wq * r.getX() + yq * r.getZ() - zq * r.getY();
         float y_ = yq * r.getW() + wq * r.getY() + zq * r.getX() - xq * r.getZ();
@@ -97,7 +97,7 @@ public class Quaternion {
         return new Quaternion(x_, y_, z_, w_);
     }
 
-    public Quaternion Mul(Vector4 r) {
+    public Quaternion mul(Vector4 r) {
         float w_ = -xq * r.getX() - yq * r.getY() - zq * r.getZ();
         float x_ = wq * r.getX() + yq * r.getZ() - zq * r.getY();
         float y_ = wq * r.getY() + zq * r.getX() - xq * r.getZ();
@@ -115,19 +115,19 @@ public class Quaternion {
     }
 
 
-    public static Quaternion QuaternionFromEuler(float ax, float ay, float az) {
+    public static Quaternion quaternionFromEuler(float ax, float ay, float az) {
         Vector4 vx = new Vector4(1, 0, 0);
         Vector4 vy = new Vector4(0, 1, 0);
         Vector4 vz = new Vector4(0, 0, 1);
         Quaternion qx = new Quaternion(vx, ax);
         Quaternion qy = new Quaternion(vy, ay);
         Quaternion qz = new Quaternion(vz, az);
-        Quaternion qt = qx.Mul(qy);
-        qt = qt.Mul(qz);
+        Quaternion qt = qx.mul(qy);
+        qt = qt.mul(qz);
         return qt;
     }
 
-    public Matrix ToRotationMatrix() {
+    public Matrix toRotationMatrix() {
         Vector4 forward = new Vector4(2.0f * (xq * zq - wq * yq), 2.0f * (yq * zq + wq * xq), 1.0f - 2.0f * (xq * xq + yq * yq));
         Vector4 up = new Vector4(2.0f * (xq * yq + wq * zq), 1.0f - 2.0f * (xq * xq + zq * zq), 2.0f * (yq * zq - wq * xq));
         Vector4 right = new Vector4(1.0f - 2.0f * (yq * yq + zq * zq), 2.0f * (xq * yq - wq * zq), 2.0f * (xq * zq + wq * yq));

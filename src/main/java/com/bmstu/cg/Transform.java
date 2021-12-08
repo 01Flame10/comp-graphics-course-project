@@ -48,22 +48,24 @@ public class Transform {
     }
 
     public Transform rotate(Quaternion rotation) {
-        return new Transform(position, rotation.Mul(this.rotation).Normalized(), scale, eulerRotation);
+        return new Transform(position, rotation.mul(this.rotation).normalized(), scale, eulerRotation);
     }
 
     public Transform rotateFromNull(float ox, float oy, float oz) {
         eulerRotation = new Vector4(ox, oy, oz, 1);
 
-        float to_rad = (float) Math.PI / 180;
-        Quaternion rotation = Quaternion.QuaternionFromEuler(ox * to_rad, oy * to_rad, oz * to_rad);
+        float toRad = (float) Math.PI / 180;
+        Quaternion rotation = Quaternion.quaternionFromEuler(ox * toRad, oy * toRad, oz * toRad);
 
-        return new Transform(position, rotation.Normalized(), scale, eulerRotation);
+        return new Transform(position, rotation.normalized(), scale, eulerRotation);
     }
 
     public Matrix getTransformation() {
-        Matrix translationMatrix = new Matrix().createMovement(position.getX(), position.getY(), position.getZ());
-        Matrix rotationMatrix = rotation.ToRotationMatrix();
-        Matrix scaleMatrix = new Matrix().createScale(scale.getX(), scale.getY(), scale.getZ());
+        Matrix translationMatrix = new Matrix()
+                .createMovement(position.getX(), position.getY(), position.getZ());
+        Matrix rotationMatrix = rotation.toRotationMatrix();
+        Matrix scaleMatrix = new Matrix()
+                .createScale(scale.getX(), scale.getY(), scale.getZ());
 
         return translationMatrix.multiply(rotationMatrix.multiply(scaleMatrix));
     }
