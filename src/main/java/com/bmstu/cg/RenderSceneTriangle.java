@@ -59,6 +59,7 @@ public class RenderSceneTriangle extends ImageCG {
         return !vertices.isEmpty();
     }
 
+    // отсечение компонента
     private void clipPolygonComponent(List<Vertex> vertices, int componentIndex,
                                       float componentFactor, List<Vertex> result) {
         Vertex previousVertex = vertices.get(vertices.size() - 1);
