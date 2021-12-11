@@ -61,7 +61,6 @@ public class Torus extends PrimitiveObject {
             float y1 = (float) (0.5 + Math.atan2(normal.getY(), Math.sqrt(normal.getX() * normal.getX() + normal.getZ() * normal.getZ()) - this.sweptRadius) / (Math.PI * 2.0f)) * texture.getHeight();//getCoord(0.0f, (float)Math.PI, 0.0f, texture.getHeight() - 1, phi);//phi * texture.getHeight();//
 
             int i1 = (int) x1, j1 = (int) y1;
-            //System.out.println(x1 + " " + y1);
             if (i1 >= 0 && j1 >= 0 && i1 < texture.getWidth() && j1 < texture.getHeight()) {
                 float[] colors = texture.getPixelColor(i1, j1);
                 ColorCG color_current = new ColorCG(colors[0], colors[1], colors[2]);
@@ -113,8 +112,6 @@ public class Torus extends PrimitiveObject {
         coeffs.add(2.0f * sum_d_sqrd * e + 4.0f * f * f + four_a_sqrd * dy * dy);
         coeffs.add(4.0f * sum_d_sqrd * f);
         coeffs.add(sum_d_sqrd * sum_d_sqrd);
-        Solver solv = new Solver();
-
 
         List<Float> solution = Solver.solve4(coeffs);
         if (solution == null)

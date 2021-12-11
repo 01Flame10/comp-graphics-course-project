@@ -75,15 +75,11 @@ public class ImageCG {
 
     // when renders
     public void drawPixel(int x, int y, byte a, byte b, byte g, byte r) {
-        if (x == 100 && y == 100) {
-            System.out.println("100/100");
-        }
         int index = (x + y * widthImage) * 4;
         mComponents[index] = a;
         mComponents[index + 1] = b;
         mComponents[index + 2] = g;
         mComponents[index + 3] = r;
-//        drawSnippet();
     }
 
     /// when run without render
@@ -93,16 +89,6 @@ public class ImageCG {
         mComponents[index + 1] = (byte) ((b & 0xFF) * lightAmt);
         mComponents[index + 2] = (byte) ((g & 0xFF) * lightAmt);
         mComponents[index + 3] = (byte) ((r & 0xFF) * lightAmt);
-//        drawSnippet();
-    }
-
-    // TODO: delete
-    private void drawSnippet() {
-        int index = (100 + 100 * widthImage) * 4;
-        mComponents[index] = (byte) 255;
-        mComponents[index + 1] = (byte) 255;
-        mComponents[index + 2] = (byte) 255;
-        mComponents[index + 3] = (byte) 255;
     }
 
     public void copyPixel(int destX, int destY, int srcX, int srcY, ImageCG src, float lightAmt) {

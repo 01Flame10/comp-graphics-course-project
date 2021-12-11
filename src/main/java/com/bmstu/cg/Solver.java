@@ -11,20 +11,20 @@ public class Solver {
         return ((x) > -EQN_EPS && (x) < EQN_EPS);
     }
 
-    public static List<Float> solve2(List<Float> c) {
+    private static List<Float> solve2(List<Float> c) {
         float p = c.get(1) / (2 * c.get(2));
         float q = c.get(0) / c.get(2);
 
         float D = p * p - q;
 
         if (isZero(D)) {
-            List<Float> ans = new ArrayList();
+            List<Float> ans = new ArrayList<>();
             ans.add(-p);
             return ans;
         } else if (D < 0) {
             return null;
         } else {
-            List<Float> ans = new ArrayList();
+            List<Float> ans = new ArrayList<>();
             float sqrt_D = (float) Math.sqrt(D);
             ans.add(sqrt_D - p);
             ans.add(-sqrt_D - p);
@@ -32,7 +32,7 @@ public class Solver {
         }
     }
 
-    public static List<Float> solve3(List<Float> c) {
+    private static List<Float> solve3(List<Float> c) {
 
 
         float A = c.get(2) / c.get(3);
@@ -46,7 +46,7 @@ public class Solver {
         float cb_p = p * p * p;
         float D = q * q + cb_p;
 
-        List<Float> s = new ArrayList();
+        List<Float> s = new ArrayList<>();
 
         if (isZero(D)) {
             if (isZero(q)) {
@@ -59,7 +59,7 @@ public class Solver {
         } else if (D < 0) /* Casus irreducibilis: three real solutions */ {
             float phi = (float) (1.0f / 3 * Math.acos(-q / Math.sqrt(-cb_p)));
             float t = 2 * (float) Math.sqrt(-p);
-            s = new ArrayList();
+            s = new ArrayList<>();
             s.add(t * (float) Math.cos(phi));
             s.add(-t * (float) Math.cos(phi + Math.PI / 3));
             s.add(-t * (float) Math.cos(phi - Math.PI / 3));
@@ -67,7 +67,7 @@ public class Solver {
             float sqrt_D = (float) Math.sqrt(D);
             float u = (float) Math.cbrt(sqrt_D - q);
             float v = -(float) Math.cbrt(sqrt_D + q);
-            s = new ArrayList();
+            s = new ArrayList<>();
             s.add(u + v);
         }
 
@@ -94,11 +94,11 @@ public class Solver {
         float p = -3.0f / 8 * sq_A + B;
         float q = 1.0f / 8 * sq_A * A - 1.0f / 2 * A * B + C;
         float r = -3.0f / 256 * sq_A * sq_A + 1.0f / 16 * sq_A * B - 1.0f / 4 * A * C + D;
-        List<Float> s = new ArrayList();
+        List<Float> s = new ArrayList<>();
 
         if (isZero(r)) {
 
-            List<Float> coeffs = new ArrayList();
+            List<Float> coeffs = new ArrayList<>();
             coeffs.add(q);
             coeffs.add(p);
             coeffs.add((float) 0);
@@ -107,7 +107,7 @@ public class Solver {
             s.add((float) 0);
         } else {
 
-            List<Float> coeffs = new ArrayList();
+            List<Float> coeffs = new ArrayList<>();
             coeffs.add(1.0f / 2 * r * p - 1.0f / 8 * q * q);
             coeffs.add(-r);
             coeffs.add(-1.0f / 2 * p);
@@ -135,7 +135,7 @@ public class Solver {
                 v = (float) Math.sqrt(v);
             else
                 return null;
-            coeffs = new ArrayList();
+            coeffs = new ArrayList<>();
             coeffs.add(z - u);
             coeffs.add(q < 0 ? -v : v);
             coeffs.add((float) 1);
@@ -143,7 +143,7 @@ public class Solver {
 
             s = solve2(coeffs);
 
-            coeffs = new ArrayList();
+            coeffs = new ArrayList<>();
             coeffs.add(z + u);
             coeffs.add(q < 0 ? v : -v);
             coeffs.add((float) 1);

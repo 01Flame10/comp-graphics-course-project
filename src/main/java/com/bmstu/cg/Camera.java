@@ -36,7 +36,7 @@ public class Camera {
 
 
     public Matrix getViewProjection() {
-        Matrix cameraRotation = transform.getTransformedRot().Negative().toRotationMatrix();
+        Matrix cameraRotation = transform.getTransformedRot().negative().toRotationMatrix();
         Vector4 cameraPos = transform.getTransformedPos().multiply(-1);
 
         Matrix cameraTranslation = new Matrix().createMovement(cameraPos.getX(), cameraPos.getY(), cameraPos.getZ());

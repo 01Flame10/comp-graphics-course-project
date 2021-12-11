@@ -70,6 +70,7 @@ public class RenderSceneTriangle extends ImageCG {
             boolean currentInside = currentComponent <= currentVertex.getPosition().getW();
 
             if (currentInside ^ previousInside) {
+                // linear interpolation
                 float lerpAmt = (previousVertex.getPosition().getW() - previousComponent) /
                         ((previousVertex.getPosition().getW() - previousComponent) -
                                 (currentVertex.getPosition().getW() - currentComponent));

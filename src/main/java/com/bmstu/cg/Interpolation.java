@@ -38,9 +38,9 @@ public class Interpolation {
         depth[1] = midYVert.getPosition().getZ();
         depth[2] = maxYVert.getPosition().getZ();
 
-        lightAmt[0] = Limit(minYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
-        lightAmt[1] = Limit(midYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
-        lightAmt[2] = Limit(maxYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
+        lightAmt[0] = limit(minYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
+        lightAmt[1] = limit(midYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
+        lightAmt[2] = limit(maxYVert.getNormal().dot(lightDir)) * 0.5f + 0.1f;
 
         oneOverZ[0] = 1.0f / minYVert.getPosition().getW();
         oneOverZ[1] = 1.0f / midYVert.getPosition().getW();
@@ -54,16 +54,16 @@ public class Interpolation {
         texCoordY[1] = midYVert.getTexCoords().getY() * oneOverZ[1];
         texCoordY[2] = maxYVert.getTexCoords().getY() * oneOverZ[2];
 
-        texCoordXXStep = FindStepX(texCoordX, minYVert, midYVert, maxYVert, oneOverdX);
-        texCoordXYStep = FindStepY(texCoordX, minYVert, midYVert, maxYVert, oneOverdY);
-        texCoordYXStep = FindStepX(texCoordY, minYVert, midYVert, maxYVert, oneOverdX);
-        texCoordYYStep = FindStepY(texCoordY, minYVert, midYVert, maxYVert, oneOverdY);
-        oneOverZXStep = FindStepX(oneOverZ, minYVert, midYVert, maxYVert, oneOverdX);
-        oneOverZYStep = FindStepY(oneOverZ, minYVert, midYVert, maxYVert, oneOverdY);
-        depthXStep = FindStepX(depth, minYVert, midYVert, maxYVert, oneOverdX);
-        depthYStep = FindStepY(depth, minYVert, midYVert, maxYVert, oneOverdY);
-        lightAmtXStep = FindStepX(lightAmt, minYVert, midYVert, maxYVert, oneOverdX);
-        lightAmtYStep = FindStepY(lightAmt, minYVert, midYVert, maxYVert, oneOverdY);
+        texCoordXXStep = findStepX(texCoordX, minYVert, midYVert, maxYVert, oneOverdX);
+        texCoordXYStep = findStepY(texCoordX, minYVert, midYVert, maxYVert, oneOverdY);
+        texCoordYXStep = findStepX(texCoordY, minYVert, midYVert, maxYVert, oneOverdX);
+        texCoordYYStep = findStepY(texCoordY, minYVert, midYVert, maxYVert, oneOverdY);
+        oneOverZXStep = findStepX(oneOverZ, minYVert, midYVert, maxYVert, oneOverdX);
+        oneOverZYStep = findStepY(oneOverZ, minYVert, midYVert, maxYVert, oneOverdY);
+        depthXStep = findStepX(depth, minYVert, midYVert, maxYVert, oneOverdX);
+        depthYStep = findStepY(depth, minYVert, midYVert, maxYVert, oneOverdY);
+        lightAmtXStep = findStepX(lightAmt, minYVert, midYVert, maxYVert, oneOverdX);
+        lightAmtYStep = findStepY(lightAmt, minYVert, midYVert, maxYVert, oneOverdY);
     }
 
     public float getTexCoordX(int index) {
@@ -126,7 +126,7 @@ public class Interpolation {
         return lightAmtYStep;
     }
 
-    private float FindStepX(float[] values, Vertex minYVert, Vertex midYVert,
+    private float findStepX(float[] values, Vertex minYVert, Vertex midYVert,
                             Vertex maxYVert, float oneOverdX) {
         return
                 (((values[1] - values[2]) *
@@ -135,7 +135,7 @@ public class Interpolation {
                                 (midYVert.getY() - maxYVert.getY()))) * oneOverdX;
     }
 
-    private float FindStepY(float[] values, Vertex minYVert, Vertex midYVert,
+    private float findStepY(float[] values, Vertex minYVert, Vertex midYVert,
                             Vertex maxYVert, float oneOverdY) {
         return
                 (((values[1] - values[2]) *
@@ -144,7 +144,7 @@ public class Interpolation {
                                 (midYVert.getX() - maxYVert.getX()))) * oneOverdY;
     }
 
-    private float Limit(float val) {
+    private float limit(float val) {
         if (val > 1.0f) {
             return 1.0f;
         }

@@ -123,18 +123,18 @@ public class Triangle extends PrimitiveObject {
 
     @Override
     public float findIntersection(Ray ray) {
-        Vector4 ray_direction = ray.getRayDirection();
-        Vector4 ray_origin = ray.getRayOrigin();
+        Vector4 rayDirection = ray.getRayDirection();
+        Vector4 rayOrigin = ray.getRayOrigin();
 
         Vector4 E1 = B.substitute(A);
         Vector4 E2 = C.substitute(A);
-        Vector4 T = ray_origin.substitute(A);
-        Vector4 P = ray_direction.cross(E2);
+        Vector4 T = rayOrigin.substitute(A);
+        Vector4 P = rayDirection.cross(E2);
         Vector4 Q = T.cross(E1);
         float znam = P.dot3(E1);
         float t = Q.dot3(E2) / znam;
         float u = P.dot3(T) / znam;
-        float v = Q.dot3(ray_direction) / znam;
+        float v = Q.dot3(rayDirection) / znam;
         float t1 = 1 - u - v;
         if (u < 1f && u > 0f && v < 1f && v > 0f && t1 < 1f && t1 > 0f)
             return t;

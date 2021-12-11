@@ -70,17 +70,17 @@ public class Quaternion {
         this.wq = cosHalfAngle;
     }
 
-    public float Length() {
+    public float length() {
         return (float) Math.sqrt(xq * xq + yq * yq + zq * zq + wq * wq);
     }
 
     public Quaternion normalized() {
-        float length = Length();
+        float length = length();
 
         return new Quaternion(xq / length, yq / length, zq / length, wq / length);
     }
 
-    public Quaternion Negative() {
+    public Quaternion negative() {
         return new Quaternion(-xq, -yq, -zq, wq);
     }
 

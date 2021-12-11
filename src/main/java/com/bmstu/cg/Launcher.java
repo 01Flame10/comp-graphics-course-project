@@ -1202,13 +1202,13 @@ public class Launcher extends Canvas {
                     addNewObject(str, resourcePath + object.getObjectFileName(), new Vector4(0, 0, 0, 1), new Vector4(1, 1, 1, 1), new ColorCG(1.0f, 1.0f, 1.0f));
                     update();
                 } else {
-                    System.out.println("Not alone");
                     phantomChooseMode = true;
                     mouseX = Integer.MAX_VALUE;
                     mouseY = Integer.MAX_VALUE;
 
                     complexObjectList.addAll(complexObjectList.stream()
                             .map((o) -> {
+                                System.out.println("Creating phantom with type |" + str + "|");
                                 ComplexObject phantomReference = new ComplexObject(resourcePath + object.getObjectFileName(),
                                         o.getTrans(),
                                         str,

@@ -79,7 +79,7 @@ public class ComplexObject {
                 .collect(Collectors.toList());
     }
 
-    public void addToObjects(List<PrimitiveObject> scene_objects) {
+    public void addToObjects(List<PrimitiveObject> sceneObjects) {
         Matrix transform = trans.getTransformation();
 
         if (texPaint) {
@@ -88,7 +88,7 @@ public class ComplexObject {
                         vertexes.get(indexes.get(i + 1)).transform(transform, transform),//.Transform(screenSpaceTransform, identity).PerspectiveDivide(),
                         vertexes.get(indexes.get(i + 2)).transform(transform, transform),//.Transform(screenSpaceTransform, identity).PerspectiveDivide(),
                         texture);
-                scene_objects.add(tmp);
+                sceneObjects.add(tmp);
 
             }
         } else {
@@ -97,7 +97,7 @@ public class ComplexObject {
                         vertexes.get(indexes.get(i + 1)).transform(transform, transform),
                         vertexes.get(indexes.get(i + 2)).transform(transform, transform),
                         color);
-                scene_objects.add(tmp);
+                sceneObjects.add(tmp);
 
             }
         }
